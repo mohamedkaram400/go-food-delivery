@@ -1,4 +1,5 @@
 
+<!-- Business Requirements -->
 
 ## Actors:- 
 
@@ -32,8 +33,6 @@ Reviews
 --------------
 Rate Restaurant
 Rate Driver
-
-
 
 - Driver (user)
 Authentication
@@ -82,6 +81,7 @@ App Management
 Approve Restaurant
 Suspend User
 View Reports
+
 
 ## Workflow
 

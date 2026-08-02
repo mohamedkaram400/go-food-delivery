@@ -1,7 +1,6 @@
-
 - Project Name
 
-* Food Delivery Platform
+# Food Delivery Platform
 
 
 - Purpose
@@ -9,12 +8,14 @@
 Allow customers to order food from restaurants, restaurants to manage orders, drivers to deliver them, and administrators to manage the platform.
 
 - Actors
+
 * Customer
 * Driver
 * Admin
 * Restaurant
 
-- Goals
+- Goals (Why am I making this project)
+
 * Fast
 * Scalable
 * Microservice Architecture
@@ -23,7 +24,7 @@ Allow customers to order food from restaurants, restaurants to manage orders, dr
 * Production Ready
 * Event Driven
 
-## Technical Goals
+- Technical Goals (Why am I making this project)
 
 - Build a production-style backend using Go.
 - Learn Microservice Architecture.
@@ -35,6 +36,7 @@ Allow customers to order food from restaurants, restaurants to manage orders, dr
 - Learn production deployment practices.
 
 - Non-Goals
+
 * No AI recommendations
 * No coupons
 * No multi-language
@@ -42,3 +44,7 @@ Allow customers to order food from restaurants, restaurants to manage orders, dr
 * No multiple currencies
 * No restaurant analytics
 
+
+
+
+Step 1: (Why am I making this project)
