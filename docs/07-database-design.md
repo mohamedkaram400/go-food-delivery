@@ -49,21 +49,28 @@ Pass 2 — Columns
 - role_id
 - status
 - email_verified_at
+- created_at
+- updated_at
 
 * customers
 - id
 - phone
 - user_id
+- created_at
+- updated_at
 
 * addresses
 - id
+- customer_id
 - label
 - address_line
 - city
 - latitude
 - longitude
 - is_default
-- customer_id
+- created_at
+- updated_at
+
 
 * refresh_tokens
 - id
@@ -98,10 +105,11 @@ permissions
 - updated_at
 
 * menus
+- id
+- restaurant_id
 - name
 - description
 - is_active
-- restaurant_id
 - created_at
 - updated_at
 
@@ -117,13 +125,13 @@ permissions
 
 * menu_items
 - id
+- restaurant_id
+- category_id
 - name
 - description
 - price
 - image_url
-- is_avilable
-- restaurant_id
-- category_id
+- is_available
 - created_at
 - updated_at
 
@@ -134,6 +142,10 @@ permissions
 - open_time
 - close_time
 - is_closed
+- payment_id
+- placed_at
+- created_at
+- updated_at
 
 * carts
 - id
@@ -172,89 +184,225 @@ permissions
 - total_price
 - order_id
 - menu_item_id
-
+- created_at
+- updated_at
 
 * payments
 - id
+- order_id
+- amount
+- status (pending, paid, failed, refunded)
+- payment_method
+- transaction_id
+- paid_at
+- created_at
+- updated_at
 
 * drivers
 - id
+- user_id
+- status
+- is_online
+- created_at
+- updated_at
 
 * deliveries
 - id
+- order_id
+- driver_id
+- status
+- assigned_at
+- accepted_at
+- picked_up_at
+- delivered_at
+- created_at
+- updated_at
 
 * driver_locations
 - id
+- driver_id
+- latitude
+- longitude
+- recorded_at
 
 * notifications
 - id
+- user_id
+- type
+- title
+- message
+- status
+- read_at
+- created_at
 
+Pass 3 — Relationships
 
-Pass 1 — Relationships
+Identity Service
+----------------
 
-Restaurant
-
+User
 1
-
 ↓
-
-N
-
-Menus
-
-<!-- ====== -->
-
-Menu
-
 1
-
-↓
-
-N
-
-Categories
-
-<!-- ====== -->
-Category
-
-1
-
-↓
-
-N
-
-Menu Items
-
-<!-- ====== -->
-
 Customer
 
+User
 1
-
 ↓
-
 N
+Refresh Tokens
 
+User
+N
+↓
+1
+Role
+
+Role
+N
+↕
+N
+Permissions
+
+Customer
+1
+↓
+N
+Addresses
+
+
+Restaurant Service
+------------------
+
+Restaurant
+1
+↓
+N
+Menus
+
+Restaurant
+1
+↓
+N
+Working Hours
+
+Menu
+1
+↓
+N
+Categories
+
+Category
+1
+↓
+N
+Menu Items
+
+Restaurant
+1
+↓
+N
 Orders
 
-<!-- ====== -->
-Order
 
+Order Service
+-------------
+
+Customer
 1
-
 ↓
-
 N
+Orders
 
+Customer
+1
+↓
+1
+Active Cart
+
+Cart
+1
+↓
+N
+Cart Items
+
+Cart Item
+N
+↓
+1
+Menu Item
+
+Order
+1
+↓
+N
 Order Items
 
-<!-- ====== -->
-Cart
-
-1
-
-↓
-
+Order Item
 N
+↓
+1
+Menu Item
 
-Cart Items
+Order
+N
+↓
+1
+Restaurant
+
+Order
+N
+↓
+1
+Address
+
+Order
+1
+↓
+1
+Payment
+
+
+Delivery Service
+----------------
+
+Driver
+1
+↓
+N
+Deliveries
+
+Driver
+1
+↓
+N
+Driver Locations
+
+Delivery
+N
+↓
+1
+Driver
+
+Delivery
+1
+↓
+1
+Order
+
+
+Notification Service
+--------------------
+
+User
+1
+↓
+N
+Notifications
+
+
+Pass 4 — Constraints
+
+
+
+Pass 5 — Indexes
