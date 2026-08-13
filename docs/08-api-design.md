@@ -28,9 +28,10 @@ DELETE /restaurants/:id
 
 ### Menu
 GET    /restaurants/:id/menu
+GET    /menus/:menu_id
+PATCH  /menus/:menu_id
 
 # Categories
-
 POST   /menus/:menu_id/categories
 GET    /menus/:menu_id/categories
 GET    /categories/:id
@@ -44,9 +45,10 @@ PATCH  /menu-items/:id
 DELETE  /menu-items/:id
 
 ### Menu Items
-
-POST   /menus/:menu_id/items
+POST   /categories/:category_id/items
+GET    /categories/:category_id/items
 GET    /menus/:menu_id/items
+
 GET    /menu-items/:id
 PATCH  /menu-items/:id
 DELETE /menu-items/:id
