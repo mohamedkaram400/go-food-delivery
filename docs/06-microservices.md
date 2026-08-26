@@ -184,14 +184,6 @@ Restaurant Service
 
 Restaurant Database
 
-Catalog Service
-
-↓
-
-Catalog Database
-
-Order Service
-
 ↓
 
 Order Database
