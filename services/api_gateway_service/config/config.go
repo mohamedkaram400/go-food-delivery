@@ -9,8 +9,8 @@ type Config struct {
 	NotificationService   string
 }
 
-func Load() Config {
-	return Config{
+func Load() *Config {
+	return &Config{
 		Port:              ":8080",
 		IdentityService:   "localhost:50051",
 		RestaurantService: "localhost:50052",
