@@ -13,6 +13,7 @@ migrate -version
 
 migrate create -ext sql -dir migrations -seq create_users_table
 
+go get -u gorm.io/gorm
 
 protoc \
   --go_out=services/identity_service \
