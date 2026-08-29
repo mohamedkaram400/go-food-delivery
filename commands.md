@@ -7,9 +7,10 @@
 go get google.golang.org/protobuf
 go get google.golang.org/grpc 
 
+go get -u gorm.io/gorm
+go get -u gorm.io/driver/mysql
 
 brew install golang-migrate
-migrate -version
 
 migrate create -ext sql -dir migrations -seq create_users_table
 

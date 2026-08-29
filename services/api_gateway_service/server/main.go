@@ -16,8 +16,14 @@ func main() {
 	// Load config file 
 	cfg := config.Load()
 
+    // ------------------------------------
+	// Connect to the DB
+    // ------------------------------------
+	
 
-	// Connect to Identity Service.
+    // ------------------------------------
+	// Connect to Identity Service
+    // ------------------------------------
 	identityClient, identityConn, err :=
 		client.NewIdentityClient(cfg.IdentityService)
 
