@@ -3,13 +3,12 @@ CREATE TABLE users (
     name VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL UNIQUE,
     phone VARCHAR(50) NOT NULL,
-    status VARCHAR(255) NOT NULL,
+    status VARCHAR(30) NOT NULL DEFAULT 'active',
     password_hash VARCHAR(255) NOT NULL,
-    role_id INT
-    email_verified_at TIMESTAMP,
+    role_id BIGINT UNSIGNED,
+    email_verified_at TIMESTAMP NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        ON UPDATE CURRENT_TIMESTAMP
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
-    FOREIGN KEY (role_id) REFERENCES roles(id),
+    FOREIGN KEY (role_id) REFERENCES roles(id)
 );
