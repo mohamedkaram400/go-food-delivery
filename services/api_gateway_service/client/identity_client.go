@@ -1,9 +1,10 @@
 package client
 
 import (
+
+	pb "github.com/mohamed-karam/go-food-delivery/identity-service/proto/identity"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-	pb "github.com/mohamed-karam/go-food-delivery/identity-service/proto/identity"
 )
 
 func NewIdentityClient(address string) (pb.IdentityServiceClient, *grpc.ClientConn, error) {

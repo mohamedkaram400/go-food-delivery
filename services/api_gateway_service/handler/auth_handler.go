@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -23,14 +24,24 @@ func (h *AuthHandler) Register(c *gin.Context) {
 		Name    string `json:"name"`
 		Email    string `json:"email"`
 		Password string `json:"password"`
+		Phone string `json:"phone"`
+		RoleID  int32 `json:"role_id"`
 	}
 
+	log.Println("🔥 1. Register HTTP handler started")
+
 	if err := c.ShouldBindJSON(&request); err != nil {
+		log.Printf("❌ 2. JSON binding error: %v", err)
+
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "invalid request",
 		})
 		return
 	}
+
+	log.Println("✅ 3. JSON binding successful")
+	log.Printf("Name: %v", request.Name)
+	log.Printf("Email: %v", request.Email)
 
 	// Call Identity Service using gRPC.
 	user, err := h.identityClient.Register(
@@ -39,15 +50,21 @@ func (h *AuthHandler) Register(c *gin.Context) {
 			Name:    request.Name,
 			Email:    request.Email,
 			Password: request.Password,
+			Phone: request.Phone,
+			RoleID: request.RoleID,
 		},
 	)
+	log.Println("📥 5. Returned from Identity Service gRPC call")
 
 	if err != nil {
+		log.Printf("❌ 6. gRPC error: %v", err)
 		c.JSON(http.StatusUnauthorized, gin.H{
 			"message": "invalid credentials",
 		})
 		return
 	}
+
+	log.Printf("✅ 7. User received: %+v", user)
 
 	c.JSON(http.StatusCreated, gin.H{
 		"user": user,

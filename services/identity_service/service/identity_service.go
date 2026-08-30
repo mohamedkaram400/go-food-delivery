@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/mohamed-karam/go-food-delivery/identity-service/entity"
+	"github.com/mohamed-karam/go-food-delivery/identity-service/pkg"
 	"github.com/mohamed-karam/go-food-delivery/identity-service/repo"
 	"github.com/mohamed-karam/go-food-delivery/identity-service/requests"
 )
@@ -19,13 +20,31 @@ func NewIdentityService(identityRepo *repo.IdentityRepo) *IdentityService {
 	}
 }
 
-func (s *IdentityService) Rgeister(ctx context.Context, req *requests.RegisterRequest) (*entity.User, error) {
-	return nil, nil
+func (s *IdentityService) Register(ctx context.Context, req *requests.RegisterRequest) (*entity.User, error) {
 
+	hashedPassword, err := pkg.HashPassword(req.Password)
+	if err != nil {
+		return nil, err
+	}
+
+	userObj := &entity.User{
+		Name: req.Name,
+		Email: req.Email,
+		Phone: req.Phone,
+		RoleID: req.RoleID,
+		PasswordHash: hashedPassword,
+	}
+
+	user, err := s.identityRepo.Register(ctx, userObj)
+	
+	if err != nil {
+		return nil, err
+	}
+
+	return user, nil
 }
 
 func (s *IdentityService) Login(ctx context.Context, req *requests.LoginRequest) (*entity.User, error) {
-
 
 	// Call Identity Service using gRPC.
 	// user, err := h.identityRepo.Login(

@@ -26,7 +26,8 @@ type RegisterRequest struct {
 	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
 	Email         string                 `protobuf:"bytes,2,opt,name=email,proto3" json:"email,omitempty"`
 	Password      string                 `protobuf:"bytes,3,opt,name=password,proto3" json:"password,omitempty"`
-	Role          string                 `protobuf:"bytes,4,opt,name=role,proto3" json:"role,omitempty"`
+	RoleID        int32                  `protobuf:"varint,4,opt,name=roleID,proto3" json:"roleID,omitempty"`
+	Phone         string                 `protobuf:"bytes,5,opt,name=phone,proto3" json:"phone,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -82,9 +83,16 @@ func (x *RegisterRequest) GetPassword() string {
 	return ""
 }
 
-func (x *RegisterRequest) GetRole() string {
+func (x *RegisterRequest) GetRoleID() int32 {
 	if x != nil {
-		return x.Role
+		return x.RoleID
+	}
+	return 0
+}
+
+func (x *RegisterRequest) GetPhone() string {
+	if x != nil {
+		return x.Phone
 	}
 	return ""
 }
@@ -323,7 +331,7 @@ type User struct {
 	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
 	Email         string                 `protobuf:"bytes,3,opt,name=email,proto3" json:"email,omitempty"`
 	Role          string                 `protobuf:"bytes,4,opt,name=role,proto3" json:"role,omitempty"`
-	Status        string                 `protobuf:"bytes,5,opt,name=status,proto3" json:"status,omitempty"`
+	Phone         string                 `protobuf:"bytes,5,opt,name=phone,proto3" json:"phone,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -386,9 +394,9 @@ func (x *User) GetRole() string {
 	return ""
 }
 
-func (x *User) GetStatus() string {
+func (x *User) GetPhone() string {
 	if x != nil {
-		return x.Status
+		return x.Phone
 	}
 	return ""
 }
@@ -553,12 +561,13 @@ var File_proto_identity_identity_proto protoreflect.FileDescriptor
 
 const file_proto_identity_identity_proto_rawDesc = "" +
 	"\n" +
-	"\x1dproto/identity/identity.proto\x12\bidentity\"k\n" +
+	"\x1dproto/identity/identity.proto\x12\bidentity\"\x85\x01\n" +
 	"\x0fRegisterRequest\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x14\n" +
 	"\x05email\x18\x02 \x01(\tR\x05email\x12\x1a\n" +
-	"\bpassword\x18\x03 \x01(\tR\bpassword\x12\x12\n" +
-	"\x04role\x18\x04 \x01(\tR\x04role\"@\n" +
+	"\bpassword\x18\x03 \x01(\tR\bpassword\x12\x16\n" +
+	"\x06roleID\x18\x04 \x01(\x05R\x06roleID\x12\x14\n" +
+	"\x05phone\x18\x05 \x01(\tR\x05phone\"@\n" +
 	"\fLoginRequest\x12\x14\n" +
 	"\x05email\x18\x01 \x01(\tR\x05email\x12\x1a\n" +
 	"\bpassword\x18\x02 \x01(\tR\bpassword\":\n" +
@@ -569,13 +578,13 @@ const file_proto_identity_identity_proto_rawDesc = "" +
 	"\x0eGetUserRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\x03R\x06userId\"9\n" +
 	"\x14ValidateTokenRequest\x12!\n" +
-	"\faccess_token\x18\x01 \x01(\tR\vaccessToken\"l\n" +
+	"\faccess_token\x18\x01 \x01(\tR\vaccessToken\"j\n" +
 	"\x04User\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x14\n" +
 	"\x05email\x18\x03 \x01(\tR\x05email\x12\x12\n" +
-	"\x04role\x18\x04 \x01(\tR\x04role\x12\x16\n" +
-	"\x06status\x18\x05 \x01(\tR\x06status\"z\n" +
+	"\x04role\x18\x04 \x01(\tR\x04role\x12\x14\n" +
+	"\x05phone\x18\x05 \x01(\tR\x05phone\"z\n" +
 	"\fAuthResponse\x12!\n" +
 	"\faccess_token\x18\x01 \x01(\tR\vaccessToken\x12#\n" +
 	"\rrefresh_token\x18\x02 \x01(\tR\frefreshToken\x12\"\n" +

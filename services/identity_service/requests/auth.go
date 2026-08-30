@@ -11,4 +11,6 @@ type RegisterRequest struct {
 	Name 		string
 	Email 		string
 	Password	string
+	RoleID		int
+	Phone		*string
 }

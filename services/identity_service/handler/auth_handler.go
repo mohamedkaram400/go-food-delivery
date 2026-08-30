@@ -2,8 +2,10 @@ package handler
 
 import (
 	"context"
+	"log"
 
 	pb "github.com/mohamed-karam/go-food-delivery/identity-service/proto/identity"
+	"github.com/mohamed-karam/go-food-delivery/identity-service/requests"
 	"github.com/mohamed-karam/go-food-delivery/identity-service/service"
 )
 
@@ -19,10 +21,37 @@ func NewIdentityHandler(IdentityService *service.IdentityService) *IdentityHandl
 	}
 }
 
-
 func (s *IdentityHandler) Register(ctx context.Context, req *pb.RegisterRequest) (*pb.AuthResponse, error) {
-	return nil, nil
 
+	log.Println("🔥 IDENTITY: Register gRPC handler reached")
+
+	registerRequest := &requests.RegisterRequest{
+		Name:     req.Name,
+		Email:    req.Email,
+		Password: req.Password,
+		RoleID:     int(req.RoleID),
+		Phone:    &req.Phone,
+	}
+	log.Printf("📥 IDENTITY: Request received: %+v", registerRequest)
+
+	log.Println(registerRequest)
+
+	user, err := s.IdentityService.Register(ctx, registerRequest)
+	if err != nil {
+		log.Printf("❌ IDENTITY: Service error: %v", err)
+		return nil, err
+	}
+
+	log.Printf("✅ IDENTITY: User created: %+v", user)
+
+	return &pb.AuthResponse{
+		User: &pb.User{
+			Id:    int64(user.ID),
+			Name:  user.Name,
+			Email: user.Email,
+			Phone: getStringValue(user.Phone),
+		},
+	}, nil
 }
 
 func (s *IdentityHandler) Login(ctx context.Context, req *pb.LoginRequest) (*pb.AuthResponse, error) {
@@ -50,7 +79,6 @@ func (s *IdentityHandler) GetUser(ctx context.Context, req *pb.GetUserRequest) (
 
 func (s *IdentityHandler) Logout(ctx context.Context, req *pb.LogoutRequest) (*pb.Empty, error) {
 	return nil, nil
-
 }
 
 
@@ -60,4 +88,13 @@ func (s *IdentityHandler) RefreshToken(ctx context.Context, req *pb.RefreshToken
 
 func (s *IdentityHandler) ValidateToken(ctx context.Context, req *pb.ValidateTokenRequest) (*pb.ValidateTokenResponse, error) {
 	return nil, nil
+}
+
+
+func getStringValue(value *string) string {
+	if value == nil {
+		return ""
+	}
+
+	return *value
 }
