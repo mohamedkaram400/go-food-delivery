@@ -7,6 +7,7 @@ import (
 	"github.com/mohamed-karam/go-food-delivery/identity-service/config"
 	"github.com/mohamed-karam/go-food-delivery/identity-service/conn"
 	"github.com/mohamed-karam/go-food-delivery/identity-service/database/migration"
+	"github.com/mohamed-karam/go-food-delivery/identity-service/database/seeder"
 	"github.com/mohamed-karam/go-food-delivery/identity-service/handler"
 	pb "github.com/mohamed-karam/go-food-delivery/identity-service/proto/identity"
 	"github.com/mohamed-karam/go-food-delivery/identity-service/repo"
@@ -44,10 +45,10 @@ func main() {
 	log.Println("✅ Migrations completed successfully")
 
 	// Run the seeders
-	// if err := seeder.Run(mysql); err != nil {
-	// 	log.Fatal("❌ Seeders failed:", err)
-    // }
-	// log.Println("✅ Seeders completed successfully")
+	if err := seeder.Run(mysql); err != nil {
+		log.Fatal("❌ Seeders failed:", err)
+    }
+	log.Println("✅ Seeders completed successfully")
 
 	// ------------------------------------
 	// Identity Service

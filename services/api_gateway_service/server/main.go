@@ -17,15 +17,9 @@ func main() {
 	cfg := config.Load()
 
     // ------------------------------------
-	// Connect to the DB
-    // ------------------------------------
-	
-
-    // ------------------------------------
 	// Connect to Identity Service
     // ------------------------------------
-	identityClient, identityConn, err :=
-		client.NewIdentityClient(cfg.IdentityService)
+	identityClient, identityConn, err := client.NewIdentityClient(cfg.IdentityService)
 
 	if err != nil {
 		log.Fatal(err)
@@ -36,7 +30,7 @@ func main() {
 	// Register REST endpoint
 	// ------------------------------------
 
-	authHandler := handler.NewAuthHandler(identityClient)
+	identityHandler := handler.NewIdentityHandler(identityClient)
 
 
 	router := gin.Default()
@@ -47,7 +41,7 @@ func main() {
 	v1 := router.Group("/api/v1")
 
 
-	routes.AuthRoutes(v1, authHandler)
+	routes.AuthRoutes(v1, identityHandler)
 
 	// ------------------------------------
 	// Start REST server
