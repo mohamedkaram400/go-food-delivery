@@ -6,7 +6,7 @@ import (
 )
 
 
-func AuthRoutes(rg *gin.RouterGroup, authHandler *handler.AuthHandler) {
+func AuthRoutes(rg *gin.RouterGroup, authHandler *handler.IdentityHandler) {
 	auth := rg.Group("/auth")
 
 	{

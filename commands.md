@@ -7,14 +7,17 @@
 go get google.golang.org/protobuf
 go get google.golang.org/grpc 
 
+brew install golang-migrate
+
 go get -u gorm.io/gorm
 go get -u gorm.io/driver/mysql
 
-brew install golang-migrate
+go get -u gorm.io/gorm
+
+go get github.com/joho/godotenv
+
 
 migrate create -ext sql -dir migrations -seq create_users_table
-
-go get -u gorm.io/gorm
 
 protoc \
   --go_out=services/identity_service \

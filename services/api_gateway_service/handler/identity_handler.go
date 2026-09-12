@@ -9,17 +9,17 @@ import (
 )
 
 
-type AuthHandler struct {
+type IdentityHandler struct {
 	identityClient pb.IdentityServiceClient
 }
 
-func NewAuthHandler(identityClient pb.IdentityServiceClient) *AuthHandler {
-	return &AuthHandler{
+func NewIdentityHandler(identityClient pb.IdentityServiceClient) *IdentityHandler {
+	return &IdentityHandler{
 		identityClient: identityClient,
 	}
 }
 
-func (h *AuthHandler) Register(c *gin.Context) {
+func (h *IdentityHandler) Register(c *gin.Context) {
 	var request struct {
 		Name    string `json:"name"`
 		Email    string `json:"email"`
@@ -72,7 +72,7 @@ func (h *AuthHandler) Register(c *gin.Context) {
 }
 
 
-func (h *AuthHandler) Login(c *gin.Context) {
+func (h *IdentityHandler) Login(c *gin.Context) {
 
 	var request struct {
 		Email    string `json:"email"`
