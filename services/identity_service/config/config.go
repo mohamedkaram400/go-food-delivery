@@ -1,5 +1,11 @@
 package config
 
+import (
+	"os"
+
+	"github.com/joho/godotenv"
+)
+
 
 type Config struct {
 	Port              string
@@ -10,15 +16,20 @@ type Config struct {
 }
 
 func Load() *Config {
-	// if os.Getenv("APP_ENV") != "production" {
-	// 	_ = godotenv.Load()
-	// }
+	_ = godotenv.Load()
 
 	return &Config{
-		Port:              ":50051",
-		IdentityService:   "localhost:50051",
-		DSN:   			   "root:qazwsx123@tcp(localhost:3306)/identity_service?charset=utf8mb4&parseTime=True&loc=Local",
-		DatabaseURL: "mysql://root:qazwsx123@tcp(localhost:3306)/identity_service",
-		MigrationPath:     "file://migrations",
+		Port:              getOrDefault(os.Getenv("SERVICE_PORT"), ":50051"),
+		IdentityService:   os.Getenv("IDENTITY_SERVICE_HOST"),
+		DatabaseURL: 	   os.Getenv("DATABASE_URL"),
+		MigrationPath:     os.Getenv("MIGRATION_PATH"),
+		DSN:   			   os.Getenv("DSN"),
 	}
+}
+
+func getOrDefault(key string, def string) string {
+	if value := os.Getenv(key); value != "" {
+		return value
+	}
+	return def
 }
