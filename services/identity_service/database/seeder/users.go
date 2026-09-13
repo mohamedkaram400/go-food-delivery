@@ -1,6 +1,7 @@
 package seeder
 
 import (
+	"errors"
 	"log"
 
 	"github.com/mohamed-karam/go-food-delivery/identity-service/entity"
@@ -10,6 +11,21 @@ import (
 
 
 func SeedUsers(db *gorm.DB) error {
+    var adminRole entity.Role
+    var customerRole entity.Role
+    var driverRole entity.Role
+
+    if err := db.Where("name = ?", "Admin").First(&adminRole).Error; err != nil {
+        return err
+    }
+
+    if err := db.Where("name = ?", "Customer").First(&customerRole).Error; err != nil {
+        return err
+    }
+
+    if err := db.Where("name = ?", "Driver").First(&driverRole).Error; err != nil {
+        return err
+    }
 
     users := []entity.User{
         {
@@ -17,18 +33,33 @@ func SeedUsers(db *gorm.DB) error {
             Email:          "admin@gmail.com",
             Phone:          stringPtr("01202095030"),
             PasswordHash:   hashPassword("password"),
-            RoleID:         1,
+            RoleID:         adminRole.ID,
             Status:         "Active",
         },
         {
-            Name:           "Admin",
-            Email:          "admin@gmail.com",
-            Phone:          stringPtr("01202095030"),
+            Name:           "Customer",
+            Email:          "customer@gmail.com",
+            Phone:          stringPtr("01211095030"),
             PasswordHash:   hashPassword("password"),
-            RoleID:         2,
+            RoleID:         customerRole.ID,
+            Status:         "Active",
+        },
+        {
+            Name:           "Driver",
+            Email:          "driver@gmail.com",
+            Phone:          stringPtr("01211093330"),
+            PasswordHash:   hashPassword("password"),
+            RoleID:         driverRole.ID,
             Status:         "Active",
         },
     }
+
+    log.Printf(
+    "Roles found: Admin=%d, Customer=%d, Driver=%d",
+    adminRole.ID,
+    customerRole.ID,
+    driverRole.ID,
+)
 
     for _, user := range users {
         var existingUser entity.User
@@ -38,10 +69,11 @@ func SeedUsers(db *gorm.DB) error {
             continue
         }
 
-        if err != gorm.ErrRecordNotFound {
+        if !errors.Is(err, gorm.ErrRecordNotFound) {
             return err
         }
 
+        log.Printf("Creating user: %s with RoleID=%d", user.Email, user.RoleID)
         if err := db.Create(&user).Error; err != nil {
             return err
         }

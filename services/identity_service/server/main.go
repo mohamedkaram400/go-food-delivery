@@ -46,7 +46,7 @@ func main() {
 
 	// Run the seeders
 	if err := seeder.Run(mysql); err != nil {
-		log.Fatal("❌ Seeders failed:", err)
+		log.Fatal("❌ Seeders failed: ", err)
     }
 	log.Println("✅ Seeders completed successfully")
 
