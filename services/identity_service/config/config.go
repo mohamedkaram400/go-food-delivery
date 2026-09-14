@@ -2,6 +2,7 @@ package config
 
 import (
 	"os"
+	"strconv"
 
 	"github.com/joho/godotenv"
 )
@@ -13,10 +14,13 @@ type Config struct {
 	DSN   			  string
 	MigrationPath	  string
 	DatabaseURL		  string
+	TokenDuration		  int
 }
 
 func Load() *Config {
 	_ = godotenv.Load()
+
+	tokenDuration, _ := strconv.Atoi(os.Getenv("TOKEN_DURATION"))
 
 	return &Config{
 		Port:              getOrDefault(os.Getenv("SERVICE_PORT"), ":50051"),
@@ -24,6 +28,7 @@ func Load() *Config {
 		DatabaseURL: 	   os.Getenv("DATABASE_URL"),
 		MigrationPath:     os.Getenv("MIGRATION_PATH"),
 		DSN:   			   os.Getenv("DSN"),
+		TokenDuration:     tokenDuration,
 	}
 }
 

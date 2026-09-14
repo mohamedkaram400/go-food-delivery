@@ -36,7 +36,7 @@ func (s *IdentityHandler) Register(ctx context.Context, req *pb.RegisterRequest)
 
 	log.Println(registerRequest)
 
-	user, err := s.IdentityService.Register(ctx, registerRequest)
+	accessToken, user, err := s.IdentityService.Register(ctx, registerRequest)
 	if err != nil {
 		log.Printf("❌ IDENTITY: Service error: %v", err)
 		return nil, err
@@ -45,6 +45,7 @@ func (s *IdentityHandler) Register(ctx context.Context, req *pb.RegisterRequest)
 	log.Printf("✅ IDENTITY: User created: %+v", user)
 
 	return &pb.AuthResponse{
+		AccessToken: accessToken,
 		User: &pb.User{
 			Id:    int64(user.ID),
 			Name:  user.Name,

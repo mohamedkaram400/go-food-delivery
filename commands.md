@@ -16,6 +16,9 @@ go get -u gorm.io/gorm
 
 go get github.com/joho/godotenv
 
+github.com/golang-jwt/jwt/v5
+
+
 
 migrate create -ext sql -dir migrations -seq create_users_table
 

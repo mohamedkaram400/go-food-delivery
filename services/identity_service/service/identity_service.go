@@ -2,7 +2,9 @@ package service
 
 import (
 	"context"
+	"time"
 
+	"github.com/mohamed-karam/go-food-delivery/identity-service/auth"
 	"github.com/mohamed-karam/go-food-delivery/identity-service/entity"
 	"github.com/mohamed-karam/go-food-delivery/identity-service/pkg"
 	"github.com/mohamed-karam/go-food-delivery/identity-service/repo"
@@ -12,19 +14,21 @@ import (
 
 type IdentityService struct {
 	identityRepo *repo.IdentityRepo
+	TokenDuration int
 }
 
-func NewIdentityService(identityRepo *repo.IdentityRepo) *IdentityService {
+func NewIdentityService(identityRepo *repo.IdentityRepo, tokenDuration int) *IdentityService {
 	return &IdentityService{
 		identityRepo: identityRepo,
+		TokenDuration: tokenDuration,
 	}
 }
 
-func (s *IdentityService) Register(ctx context.Context, req *requests.RegisterRequest) (*entity.User, error) {
+func (s *IdentityService) Register(ctx context.Context, req *requests.RegisterRequest) (string, *entity.User, error) {
 
 	hashedPassword, err := pkg.HashPassword(req.Password)
 	if err != nil {
-		return nil, err
+		return "", nil, err
 	}
 
 	userObj := &entity.User{
@@ -36,12 +40,16 @@ func (s *IdentityService) Register(ctx context.Context, req *requests.RegisterRe
 	}
 
 	user, err := s.identityRepo.Register(ctx, userObj)
-	
 	if err != nil {
-		return nil, err
+		return "", nil, err
 	}
 
-	return user, nil
+	accessToken, err := auth.GenerateAccessToken(user, time.Duration(s.TokenDuration)*time.Hour)
+	if err != nil {
+		return "", nil, err
+	}
+
+	return accessToken, user, nil
 }
 
 func (s *IdentityService) Login(ctx context.Context, req *requests.LoginRequest) (*entity.User, error) {
