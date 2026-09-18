@@ -18,6 +18,10 @@ go get github.com/joho/godotenv
 
 github.com/golang-jwt/jwt/v5
 
+go get github.com/go-playground/validator/v10
+
+
+
 
 
 migrate create -ext sql -dir migrations -seq create_users_table

@@ -44,7 +44,7 @@ func (h *IdentityHandler) Register(c *gin.Context) {
 	log.Printf("Email: %v", request.Email)
 
 	// Call Identity Service using gRPC.
-	user, err := h.identityClient.Register(
+	response, err := h.identityClient.Register(
 		c.Request.Context(),
 		&pb.RegisterRequest{
 			Name:    request.Name,
@@ -64,10 +64,10 @@ func (h *IdentityHandler) Register(c *gin.Context) {
 		return
 	}
 
-	log.Printf("✅ 7. User received: %+v", user)
+	log.Printf("✅ 7. User received: %+v", response)
 
 	c.JSON(http.StatusCreated, gin.H{
-		"user": user,
+		"data": response,
 	})
 }
 

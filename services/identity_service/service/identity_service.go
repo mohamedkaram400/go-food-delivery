@@ -2,13 +2,17 @@ package service
 
 import (
 	"context"
+	"errors"
+	"log"
 	"time"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/mohamed-karam/go-food-delivery/identity-service/auth"
 	"github.com/mohamed-karam/go-food-delivery/identity-service/entity"
 	"github.com/mohamed-karam/go-food-delivery/identity-service/pkg"
 	"github.com/mohamed-karam/go-food-delivery/identity-service/repo"
 	"github.com/mohamed-karam/go-food-delivery/identity-service/requests"
+	"gorm.io/gorm"
 )
 
 
@@ -25,6 +29,20 @@ func NewIdentityService(identityRepo *repo.IdentityRepo, tokenDuration int) *Ide
 }
 
 func (s *IdentityService) Register(ctx context.Context, req *requests.RegisterRequest) (string, *entity.User, error) {
+
+	validate := validator.New()
+	if err := validate.Struct(req); err != nil {
+		return "", nil, err
+	}
+
+	existingUser, err := s.identityRepo.GetUserByEmail(ctx, req.Email)
+	if err == nil && existingUser != nil {
+		return "", nil, errors.New("email already exists")
+	}
+
+	if ! errors.Is(err, gorm.ErrRecordNotFound) {
+		return "", nil, err
+	}
 
 	hashedPassword, err := pkg.HashPassword(req.Password)
 	if err != nil {
@@ -43,6 +61,8 @@ func (s *IdentityService) Register(ctx context.Context, req *requests.RegisterRe
 	if err != nil {
 		return "", nil, err
 	}
+
+	log.Printf("User created: %+v", user)
 
 	accessToken, err := auth.GenerateAccessToken(user, time.Duration(s.TokenDuration)*time.Hour)
 	if err != nil {

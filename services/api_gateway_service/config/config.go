@@ -1,5 +1,11 @@
 package config
 
+import (
+	"os"
+
+	"github.com/joho/godotenv"
+)
+
 type Config struct {
 	Port              string
 	IdentityService   string
@@ -10,12 +16,14 @@ type Config struct {
 }
 
 func Load() *Config {
+	_ = godotenv.Load()
+
 	return &Config{
-		Port:              ":8080",
-		IdentityService:   "localhost:50051",
-		RestaurantService: "localhost:50052",
-		OrderService:      "localhost:50053",
-		DeliveryService:   	   "localhost:50054",
-		NotificationService:   "localhost:50055",
+		Port:              		os.Getenv("API_GATEWAY_SERVICE"),
+		IdentityService:   		os.Getenv("IDENTITY_SERVICE"),
+		RestaurantService: 		os.Getenv("RESTAURANT_SERVICE"),
+		OrderService:      		os.Getenv("OORDER_SERVICE"),
+		DeliveryService:   	   	os.Getenv("DELIVERY_SERVICE"),
+		NotificationService:   	os.Getenv("NOTIFICATION_SERVICE"),
 	}
 }

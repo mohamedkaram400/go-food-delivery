@@ -45,6 +45,7 @@ func (s *IdentityHandler) Register(ctx context.Context, req *pb.RegisterRequest)
 	log.Printf("✅ IDENTITY: User created: %+v", user)
 
 	return &pb.AuthResponse{
+		RefreshToken: accessToken,
 		AccessToken: accessToken,
 		User: &pb.User{
 			Id:    int64(user.ID),

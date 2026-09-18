@@ -18,7 +18,6 @@ func NewIdentityRepo(db *gorm.DB) *IdentityRepo {
 	}
 }
 
-
 func (r *IdentityRepo) Register(ctx context.Context, user *entity.User) (*entity.User, error) {
 	
 	if err := r.DB.WithContext(ctx).Create(user).Error; err != nil {
@@ -28,6 +27,11 @@ func (r *IdentityRepo) Register(ctx context.Context, user *entity.User) (*entity
 	return user, nil
 }
 
-func (r *IdentityRepo) GetUserByEmail(ctx context.Context, email string) {
+func (r *IdentityRepo) GetUserByEmail(ctx context.Context, email string) (*entity.User, error) {
+	var user *entity.User
 
+	if err := r.DB.WithContext(ctx).Where("email = ?", email).First(&user).Error; err != nil {
+		return nil, err
+	}
+	return user, nil
 }
