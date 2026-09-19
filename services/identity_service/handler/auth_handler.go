@@ -2,22 +2,26 @@ package handler
 
 import (
 	"context"
+	"errors"
 	"log"
 
+	"github.com/go-playground/validator/v10"
 	pb "github.com/mohamed-karam/go-food-delivery/identity-service/proto/identity"
 	"github.com/mohamed-karam/go-food-delivery/identity-service/requests"
 	"github.com/mohamed-karam/go-food-delivery/identity-service/service"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 
 type IdentityHandler struct {
-	IdentityService *service.IdentityService
+	AuthService *service.AuthService
 	pb.UnimplementedIdentityServiceServer
 }
 
-func NewIdentityHandler(IdentityService *service.IdentityService) *IdentityHandler {
+func NewIdentityHandler(AuthService *service.AuthService) *IdentityHandler {
 	return &IdentityHandler{
-		IdentityService: IdentityService,
+		AuthService: AuthService,
 	}
 }
 
@@ -30,16 +34,46 @@ func (s *IdentityHandler) Register(ctx context.Context, req *pb.RegisterRequest)
 		Email:    req.Email,
 		Password: req.Password,
 		RoleID:     int(req.RoleID),
-		Phone:    &req.Phone,
+		Phone:    req.Phone,
 	}
 	log.Printf("📥 IDENTITY: Request received: %+v", registerRequest)
 
-	log.Println(registerRequest)
 
-	accessToken, user, err := s.IdentityService.Register(ctx, registerRequest)
+	accessToken, user, err := s.AuthService.Register(ctx, registerRequest)
 	if err != nil {
 		log.Printf("❌ IDENTITY: Service error: %v", err)
-		return nil, err
+
+		// Validation errors
+		var validationErrors validator.ValidationErrors
+
+		if errors.As(err, &validationErrors) {
+            return nil, status.Error(
+                codes.InvalidArgument,
+                "validation failed",
+            )
+        }
+
+        // Duplicate email
+        if err.Error() == "email already exists" {
+            return nil, status.Error(
+                codes.AlreadyExists,
+                err.Error(),
+            )
+        }
+
+        // Duplicate phone
+        if err.Error() == "phone already exists" {
+            return nil, status.Error(
+                codes.AlreadyExists,
+                err.Error(),
+            )
+        }
+
+        // Everything unexpected
+        return nil, status.Error(
+			codes.Internal,
+			"internal server error",
+		)
 	}
 
 	log.Printf("✅ IDENTITY: User created: %+v", user)
@@ -51,7 +85,7 @@ func (s *IdentityHandler) Register(ctx context.Context, req *pb.RegisterRequest)
 			Id:    int64(user.ID),
 			Name:  user.Name,
 			Email: user.Email,
-			Phone: getStringValue(user.Phone),
+			Phone: user.Phone,
 		},
 	}, nil
 }
@@ -71,18 +105,14 @@ func (s *IdentityHandler) Login(ctx context.Context, req *pb.LoginRequest) (*pb.
 
 }
 
-
 func (s *IdentityHandler) GetUser(ctx context.Context, req *pb.GetUserRequest) (*pb.User, error) {
 
 	return nil, nil
 }
 
-
-
 func (s *IdentityHandler) Logout(ctx context.Context, req *pb.LogoutRequest) (*pb.Empty, error) {
 	return nil, nil
 }
-
 
 func (s *IdentityHandler) RefreshToken(ctx context.Context, req *pb.RefreshTokenRequest) (*pb.AuthResponse, error) {
 	return nil, nil
@@ -90,13 +120,4 @@ func (s *IdentityHandler) RefreshToken(ctx context.Context, req *pb.RefreshToken
 
 func (s *IdentityHandler) ValidateToken(ctx context.Context, req *pb.ValidateTokenRequest) (*pb.ValidateTokenResponse, error) {
 	return nil, nil
-}
-
-
-func getStringValue(value *string) string {
-	if value == nil {
-		return ""
-	}
-
-	return *value
 }

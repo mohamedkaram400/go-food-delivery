@@ -6,6 +6,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	pb "github.com/mohamed-karam/go-food-delivery/identity-service/proto/identity"
+	"google.golang.org/grpc/status"
+	"google.golang.org/grpc/codes"
 )
 
 
@@ -58,11 +60,11 @@ func (h *IdentityHandler) Register(c *gin.Context) {
 
 	if err != nil {
 		log.Printf("❌ 6. gRPC error: %v", err)
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"message": "invalid credentials",
-		})
+
+		getError(err, c)
 		return
 	}
+
 
 	log.Printf("✅ 7. User received: %+v", response)
 
@@ -70,7 +72,6 @@ func (h *IdentityHandler) Register(c *gin.Context) {
 		"data": response,
 	})
 }
-
 
 func (h *IdentityHandler) Login(c *gin.Context) {
 
@@ -105,4 +106,47 @@ func (h *IdentityHandler) Login(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"user": user,
 	})
+}
+
+func getError(err error, c *gin.Context) {
+	grpcStatus, ok := status.FromError(err)
+
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "internal server error",
+		})
+		return
+	}
+
+	switch grpcStatus.Code() {
+		case codes.InvalidArgument:
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": grpcStatus.Message(),
+			})
+
+		case codes.AlreadyExists:
+			c.JSON(http.StatusConflict, gin.H{
+				"message": grpcStatus.Message(),
+			})
+
+		case codes.Unauthenticated:
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"message": grpcStatus.Message(),
+			})
+
+		case codes.NotFound:
+			c.JSON(http.StatusNotFound, gin.H{
+				"message": grpcStatus.Message(),
+			})
+
+		case codes.PermissionDenied:
+			c.JSON(http.StatusForbidden, gin.H{
+				"message": grpcStatus.Message(),
+			})
+
+		default:
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"message": "internal server error",
+			})
+	}
 }

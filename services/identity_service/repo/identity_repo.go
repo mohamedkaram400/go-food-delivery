@@ -28,10 +28,19 @@ func (r *IdentityRepo) Register(ctx context.Context, user *entity.User) (*entity
 }
 
 func (r *IdentityRepo) GetUserByEmail(ctx context.Context, email string) (*entity.User, error) {
-	var user *entity.User
+	var user entity.User
 
 	if err := r.DB.WithContext(ctx).Where("email = ?", email).First(&user).Error; err != nil {
 		return nil, err
 	}
-	return user, nil
+	return &user, nil
+}
+
+func (r *IdentityRepo) GetUserByPhone(ctx context.Context, phone string) (*entity.User, error) {
+	var user entity.User
+
+	if err := r.DB.WithContext(ctx).Where("phone = ?", phone).First(&user).Error; err != nil {
+		return nil, err
+	}
+	return &user, nil
 }

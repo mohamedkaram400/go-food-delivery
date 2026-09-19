@@ -31,7 +31,7 @@ func SeedUsers(db *gorm.DB) error {
         {
             Name:           "Admin",
             Email:          "admin@gmail.com",
-            Phone:          stringPtr("01202095030"),
+            Phone:          "01202095030",
             PasswordHash:   hashPassword("password"),
             RoleID:         adminRole.ID,
             Status:         "Active",
@@ -39,7 +39,7 @@ func SeedUsers(db *gorm.DB) error {
         {
             Name:           "Customer",
             Email:          "customer@gmail.com",
-            Phone:          stringPtr("01211095030"),
+            Phone:          "01211095030",
             PasswordHash:   hashPassword("password"),
             RoleID:         customerRole.ID,
             Status:         "Active",
@@ -47,7 +47,7 @@ func SeedUsers(db *gorm.DB) error {
         {
             Name:           "Driver",
             Email:          "driver@gmail.com",
-            Phone:          stringPtr("01211093330"),
+            Phone:          "01211093330",
             PasswordHash:   hashPassword("password"),
             RoleID:         driverRole.ID,
             Status:         "Active",
@@ -85,9 +85,6 @@ func SeedUsers(db *gorm.DB) error {
 }
 
 
-func stringPtr(value string) *string {
-	return &value
-}
 
 func hashPassword(password string) string {
     hashedPassword, err := pkg.HashPassword(password)

@@ -16,39 +16,53 @@ import (
 )
 
 
-type IdentityService struct {
+type AuthService struct {
 	identityRepo *repo.IdentityRepo
 	TokenDuration int
 }
 
-func NewIdentityService(identityRepo *repo.IdentityRepo, tokenDuration int) *IdentityService {
-	return &IdentityService{
+func NewAuthService(identityRepo *repo.IdentityRepo, tokenDuration int) *AuthService {
+	return &AuthService{
 		identityRepo: identityRepo,
 		TokenDuration: tokenDuration,
 	}
 }
 
-func (s *IdentityService) Register(ctx context.Context, req *requests.RegisterRequest) (string, *entity.User, error) {
+func (s *AuthService) Register(ctx context.Context, req *requests.RegisterRequest) (string, *entity.User, error) {
 
+	// Check validation errors 
 	validate := validator.New()
 	if err := validate.Struct(req); err != nil {
 		return "", nil, err
 	}
 
-	existingUser, err := s.identityRepo.GetUserByEmail(ctx, req.Email)
-	if err == nil && existingUser != nil {
+	// Check email
+	emailExisting, err := s.identityRepo.GetUserByEmail(ctx, req.Email)
+	if err == nil && emailExisting != nil {
 		return "", nil, errors.New("email already exists")
 	}
 
-	if ! errors.Is(err, gorm.ErrRecordNotFound) {
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return "", nil, err
 	}
 
+	// Check phone
+	phoneExisting, err := s.identityRepo.GetUserByPhone(ctx, req.Phone)
+	if err == nil && phoneExisting != nil {
+		return "", nil, errors.New("phone already exists")
+	}
+
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return "", nil, err
+	}
+
+	// Hash password
 	hashedPassword, err := pkg.HashPassword(req.Password)
 	if err != nil {
 		return "", nil, err
 	}
 
+	// Prepare user object
 	userObj := &entity.User{
 		Name: req.Name,
 		Email: req.Email,
@@ -57,6 +71,7 @@ func (s *IdentityService) Register(ctx context.Context, req *requests.RegisterRe
 		PasswordHash: hashedPassword,
 	}
 
+	// Pass the user object to repo for creation 
 	user, err := s.identityRepo.Register(ctx, userObj)
 	if err != nil {
 		return "", nil, err
@@ -64,6 +79,7 @@ func (s *IdentityService) Register(ctx context.Context, req *requests.RegisterRe
 
 	log.Printf("User created: %+v", user)
 
+	// Generate access token for that user
 	accessToken, err := auth.GenerateAccessToken(user, time.Duration(s.TokenDuration)*time.Hour)
 	if err != nil {
 		return "", nil, err
@@ -72,7 +88,7 @@ func (s *IdentityService) Register(ctx context.Context, req *requests.RegisterRe
 	return accessToken, user, nil
 }
 
-func (s *IdentityService) Login(ctx context.Context, req *requests.LoginRequest) (*entity.User, error) {
+func (s *AuthService) Login(ctx context.Context, req *requests.LoginRequest) (*entity.User, error) {
 
 	// Call Identity Service using gRPC.
 	// user, err := h.identityRepo.Login(
@@ -87,21 +103,21 @@ func (s *IdentityService) Login(ctx context.Context, req *requests.LoginRequest)
 }
 
 
-func (s *IdentityService) GetUser(ctx context.Context, userId int) (*entity.User, error) {
+func (s *AuthService) GetUser(ctx context.Context, userId int) (*entity.User, error) {
 
 	return nil, nil
 }
 
 
-func (s *IdentityService) Logout(ctx context.Context, userId int) (*entity.User, error) {
+func (s *AuthService) Logout(ctx context.Context, userId int) (*entity.User, error) {
 	return nil, nil
 
 }
 
-// func (s *IdentityService) RefreshToken(ctx context.Context, req *requests.RefreshTokenRequest) (*requests.AuthResponse, error) {
+// func (s *AuthService) RefreshToken(ctx context.Context, req *requests.RefreshTokenRequest) (*requests.AuthResponse, error) {
 // 	return nil, nil
 // }
 
-// func (s *IdentityService) ValidateToken(ctx context.Context, req *requests.ValidateTokenRequest) (*requests.ValidateTokenResponse, error) {
+// func (s *AuthService) ValidateToken(ctx context.Context, req *requests.ValidateTokenRequest) (*requests.ValidateTokenResponse, error) {
 // 	return nil, nil
 // }
