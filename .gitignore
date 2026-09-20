@@ -1,1 +1,30 @@
+# Binaries
+***.tmp
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Go build
+/bin/
+/build/
+
+# Dependencies
+/vendor/
+
+# Environment
+.env.*
 **/.env
+
+# IDE
+.idea/
+.vscode/
+
+# macOS
+.DS_Store
+
+# Logs
+*.log
