@@ -55,11 +55,11 @@ func SeedUsers(db *gorm.DB) error {
     }
 
     log.Printf(
-    "Roles found: Admin=%d, Customer=%d, Driver=%d",
-    adminRole.ID,
-    customerRole.ID,
-    driverRole.ID,
-)
+        "Roles found: Admin=%d, Customer=%d, Driver=%d",
+        adminRole.ID,
+        customerRole.ID,
+        driverRole.ID,
+    )
 
     for _, user := range users {
         var existingUser entity.User
@@ -83,7 +83,6 @@ func SeedUsers(db *gorm.DB) error {
 
     return nil
 }
-
 
 
 func hashPassword(password string) string {
