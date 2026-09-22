@@ -5,9 +5,11 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	res "github.com/mohamed-karam/go-food-delivery/api-gateway-service/response"
 	pb "github.com/mohamed-karam/go-food-delivery/identity-service/proto/identity"
-	"google.golang.org/grpc/status"
+	"google.golang.org/genproto/googleapis/rpc/errdetails"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 
@@ -35,9 +37,7 @@ func (h *IdentityHandler) Register(c *gin.Context) {
 	if err := c.ShouldBindJSON(&request); err != nil {
 		log.Printf("❌ 2. JSON binding error: %v", err)
 
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "invalid request",
-		})
+		getError(err, c)
 		return
 	}
 
@@ -46,7 +46,7 @@ func (h *IdentityHandler) Register(c *gin.Context) {
 	log.Printf("Email: %v", request.Email)
 
 	// Call Identity Service using gRPC.
-	response, err := h.identityClient.Register(
+	data, err := h.identityClient.Register(
 		c.Request.Context(),
 		&pb.RegisterRequest{
 			Name:    request.Name,
@@ -56,6 +56,7 @@ func (h *IdentityHandler) Register(c *gin.Context) {
 			RoleID: request.RoleID,
 		},
 	)
+
 	log.Println("📥 5. Returned from Identity Service gRPC call")
 
 	if err != nil {
@@ -65,11 +66,12 @@ func (h *IdentityHandler) Register(c *gin.Context) {
 		return
 	}
 
+	log.Printf("✅ 7. User received: %+v", data)
 
-	log.Printf("✅ 7. User received: %+v", response)
-
-	c.JSON(http.StatusCreated, gin.H{
-		"data": response,
+	c.JSON(http.StatusCreated, res.APIResponse{
+		Success: true,
+		Message: "Registration successful",
+		Data: data,
 	})
 }
 
@@ -108,45 +110,78 @@ func (h *IdentityHandler) Login(c *gin.Context) {
 	})
 }
 
+
 func getError(err error, c *gin.Context) {
+
 	grpcStatus, ok := status.FromError(err)
 
 	if !ok {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "internal server error",
-		})
+		c.JSON(http.StatusInternalServerError, res.APIResponse{
+            Success: false,
+            Message: "Internal server error",
+        })
 		return
 	}
 
 	switch grpcStatus.Code() {
 		case codes.InvalidArgument:
-			c.JSON(http.StatusBadRequest, gin.H{
-				"message": grpcStatus.Message(),
+			c.JSON(http.StatusBadRequest, res.APIResponse{
+				Success: false,
+				Message: grpcStatus.Message(),
+				Errors: extractFieldErrors(grpcStatus),
 			})
 
 		case codes.AlreadyExists:
-			c.JSON(http.StatusConflict, gin.H{
-				"message": grpcStatus.Message(),
+			c.JSON(http.StatusConflict, res.APIResponse{
+				Success: false,
+				Message: grpcStatus.Message(),
+				Errors: extractFieldErrors(grpcStatus),
 			})
 
 		case codes.Unauthenticated:
-			c.JSON(http.StatusUnauthorized, gin.H{
-				"message": grpcStatus.Message(),
+			c.JSON(http.StatusUnauthorized, res.APIResponse{
+				Success: false,
+				Message: grpcStatus.Message(),
 			})
 
 		case codes.NotFound:
-			c.JSON(http.StatusNotFound, gin.H{
-				"message": grpcStatus.Message(),
+			c.JSON(http.StatusNotFound, res.APIResponse{
+            	Success: false,
+				Message: grpcStatus.Message(),
 			})
 
 		case codes.PermissionDenied:
-			c.JSON(http.StatusForbidden, gin.H{
-				"message": grpcStatus.Message(),
+			c.JSON(http.StatusForbidden, res.APIResponse{
+				Success: false,
+				Message: grpcStatus.Message(),
 			})
 
 		default:
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"message": "internal server error",
+			c.JSON(http.StatusInternalServerError, res.APIResponse{
+				Success: false,
+				Message: "Internal server error",
 			})
 	}
+}
+
+func extractFieldErrors(
+    grpcStatus *status.Status,
+) map[string]string {
+
+    errorsMap := make(map[string]string)
+
+    for _, detail := range grpcStatus.Details() {
+
+        badRequest, ok := detail.(*errdetails.BadRequest)
+
+        if !ok {
+            continue
+        }
+
+        for _, violation := range badRequest.FieldViolations {
+            errorsMap[violation.Field] = violation.Description
+        }
+    }
+
+    return errorsMap
 }

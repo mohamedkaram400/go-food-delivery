@@ -9,12 +9,16 @@ import (
 	pb "github.com/mohamed-karam/go-food-delivery/identity-service/proto/identity"
 	"github.com/mohamed-karam/go-food-delivery/identity-service/requests"
 	"github.com/mohamed-karam/go-food-delivery/identity-service/service"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+
+	"github.com/mohamed-karam/go-food-delivery/identity-service/response"
+	
+    "google.golang.org/genproto/googleapis/rpc/errdetails"
+    "google.golang.org/grpc/codes"
+    "google.golang.org/grpc/status"
 )
 
 
-type IdentityHandler struct {
+type IdentityHandler struct { 
 	AuthService *service.AuthService
 	pb.UnimplementedIdentityServiceServer
 }
@@ -43,37 +47,7 @@ func (s *IdentityHandler) Register(ctx context.Context, req *pb.RegisterRequest)
 	if err != nil {
 		log.Printf("❌ IDENTITY: Service error: %v", err)
 
-		// Validation errors
-		var validationErrors validator.ValidationErrors
-
-		if errors.As(err, &validationErrors) {
-            return nil, status.Error(
-                codes.InvalidArgument,
-                "validation failed",
-            )
-        }
-
-        // Duplicate email
-        if err.Error() == "email already exists" {
-            return nil, status.Error(
-                codes.AlreadyExists,
-                err.Error(),
-            )
-        }
-
-        // Duplicate phone
-        if err.Error() == "phone already exists" {
-            return nil, status.Error(
-                codes.AlreadyExists,
-                err.Error(),
-            )
-        }
-
-        // Everything unexpected
-        return nil, status.Error(
-			codes.Internal,
-			"internal server error",
-		)
+		return toGRPCError(err)
 	}
 
 	log.Printf("✅ IDENTITY: User created: %+v", user)
@@ -120,4 +94,64 @@ func (s *IdentityHandler) RefreshToken(ctx context.Context, req *pb.RefreshToken
 
 func (s *IdentityHandler) ValidateToken(ctx context.Context, req *pb.ValidateTokenRequest) (*pb.ValidateTokenResponse, error) {
 	return nil, nil
+}
+
+
+func toGRPCError(err error) (*pb.AuthResponse, error) {
+
+	var registerErr response.RegisterError
+
+	if errors.As(err, &registerErr) {
+
+		st := status.New(
+			codes.AlreadyExists,
+			"registration failed",
+		)
+
+		var violations []*errdetails.BadRequest_FieldViolation
+
+		for field, message := range registerErr.Fields {
+			violations = append(
+				violations,
+				&errdetails.BadRequest_FieldViolation{
+					Field:       field,
+					Description: message,
+				},
+			)
+		}
+
+		detailedStatus, detailErr := st.WithDetails(
+			&errdetails.BadRequest{
+				FieldViolations: violations,
+			},
+		)
+
+		if detailErr != nil {
+			return nil, status.Errorf(
+				codes.Internal,
+				"failed to create error details: %v",
+                detailErr,
+			)
+		}
+
+		return nil, detailedStatus.Err()
+	}
+
+	// Validation error
+	var validationErrors validator.ValidationErrors
+
+	if errors.As(err, &validationErrors) {
+		return nil, status.Errorf(
+			codes.InvalidArgument,
+            "validation failed: %v",
+            validationErrors,
+		)
+	}
+
+	// Unexpected error
+	return nil, status.Errorf(
+		codes.Internal,
+		"internal error: %v",
+        err,
+	)
 }
