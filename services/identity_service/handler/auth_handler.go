@@ -47,7 +47,7 @@ func (s *IdentityHandler) Register(ctx context.Context, req *pb.RegisterRequest)
 	if err != nil {
 		log.Printf("❌ IDENTITY: Service error: %v", err)
 
-		return toGRPCError(err)
+		return nil, toGRPCError(err)
 	}
 
 	log.Printf("✅ IDENTITY: User created: %+v", user)
@@ -80,7 +80,6 @@ func (s *IdentityHandler) Login(ctx context.Context, req *pb.LoginRequest) (*pb.
 }
 
 func (s *IdentityHandler) GetUser(ctx context.Context, req *pb.GetUserRequest) (*pb.User, error) {
-
 	return nil, nil
 }
 
@@ -97,7 +96,7 @@ func (s *IdentityHandler) ValidateToken(ctx context.Context, req *pb.ValidateTok
 }
 
 
-func toGRPCError(err error) (*pb.AuthResponse, error) {
+func toGRPCError(err error) (error) {
 
 	var registerErr response.RegisterError
 
@@ -127,21 +126,21 @@ func toGRPCError(err error) (*pb.AuthResponse, error) {
 		)
 
 		if detailErr != nil {
-			return nil, status.Errorf(
+			return status.Errorf(
 				codes.Internal,
 				"failed to create error details: %v",
                 detailErr,
 			)
 		}
 
-		return nil, detailedStatus.Err()
+		return detailedStatus.Err()
 	}
 
 	// Validation error
 	var validationErrors validator.ValidationErrors
 
 	if errors.As(err, &validationErrors) {
-		return nil, status.Errorf(
+		return status.Errorf(
 			codes.InvalidArgument,
             "validation failed: %v",
             validationErrors,
@@ -149,7 +148,7 @@ func toGRPCError(err error) (*pb.AuthResponse, error) {
 	}
 
 	// Unexpected error
-	return nil, status.Errorf(
+	return status.Errorf(
 		codes.Internal,
 		"internal error: %v",
         err,
