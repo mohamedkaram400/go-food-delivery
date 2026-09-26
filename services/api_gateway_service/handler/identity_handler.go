@@ -83,14 +83,12 @@ func (h *IdentityHandler) Login(c *gin.Context) {
 	}
 
 	if err := c.ShouldBindJSON(&request); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "invalid request",
-		})
+		getError(err, c)
 		return
 	}
 
 	// Call Identity Service using gRPC.
-	user, err := h.identityClient.Login(
+	response, err := h.identityClient.Login(
 		c.Request.Context(),
 		&pb.LoginRequest{
 			Email:    request.Email,
@@ -99,14 +97,14 @@ func (h *IdentityHandler) Login(c *gin.Context) {
 	)
 
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"message": "invalid credentials",
-		})
+		getError(err, c)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"user": user,
+	c.JSON(http.StatusOK, res.APIResponse{
+		Success: true,
+		Message: "Login successful",
+		Data: response,
 	})
 }
 

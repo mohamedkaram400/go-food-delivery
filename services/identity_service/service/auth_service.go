@@ -96,18 +96,39 @@ func (s *AuthService) Register(ctx context.Context, req *requests.RegisterReques
 	return accessToken, user, nil
 }
 
-func (s *AuthService) Login(ctx context.Context, req *requests.LoginRequest) (*entity.User, error) {
+func (s *AuthService) Login(ctx context.Context, req *requests.LoginRequest) (string, *entity.User, error) {
 
-	// Call Identity Service using gRPC.
-	// user, err := h.identityRepo.Login(
-	// 	c.Request.Context(),
-	// 	&pb.LoginRequest{
-	// 		Email:    request.Email,
-	// 		Password: request.Password,
-	// 	},
-	// )
+	// Make validation in the request
+	validate := validator.New()
+	if err := validate.Struct(req); err != nil {
+		return "", nil, err
+	}
 
-	return nil, nil
+	// Check if user/email exists or not 
+	exists, err := s.identityRepo.GetUserByEmail(ctx, req.Email)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return "", nil, response.InvalidCredentialsError{
+				Message: "Invalid email or password",
+			}
+		}
+
+		return "", nil, err
+	}
+
+	// Check from password
+	if err := pkg.CheckPassword(req.Password, exists.PasswordHash); err != nil {
+		return "", nil, response.InvalidCredentialsError{
+			Message: "The sended password doesn't match the user password",
+		}
+	}
+
+	accessToken, err := auth.GenerateAccessToken(exists, time.Duration(s.TokenDuration)*time.Hour)
+	if err != nil {
+		return "", nil, err
+	}
+
+	return accessToken, exists, nil
 }
 
 func (s *AuthService) GetUser(ctx context.Context, userId int) (*entity.User, error) {

@@ -17,7 +17,7 @@ func NewIdentityRepo(db *gorm.DB) *IdentityRepo {
 		DB: db,
 	}
 }
-
+ 
 func (r *IdentityRepo) Register(ctx context.Context, user *entity.User) (*entity.User, error) {
 	
 	if err := r.DB.WithContext(ctx).Create(user).Error; err != nil {

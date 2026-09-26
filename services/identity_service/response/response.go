@@ -7,3 +7,11 @@ type RegisterError struct {
 func (e RegisterError) Error() string {
     return "registration failed"
 }
+
+type InvalidCredentialsError struct {
+    Message string
+}
+
+func (e InvalidCredentialsError) Error() string {
+    return e.Message
+}

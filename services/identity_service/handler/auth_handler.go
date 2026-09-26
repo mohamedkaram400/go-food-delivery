@@ -33,6 +33,7 @@ func (s *IdentityHandler) Register(ctx context.Context, req *pb.RegisterRequest)
 
 	log.Println("🔥 IDENTITY: Register gRPC handler reached")
 
+	// Prepare the register request
 	registerRequest := &requests.RegisterRequest{
 		Name:     req.Name,
 		Email:    req.Email,
@@ -42,7 +43,7 @@ func (s *IdentityHandler) Register(ctx context.Context, req *pb.RegisterRequest)
 	}
 	log.Printf("📥 IDENTITY: Request received: %+v", registerRequest)
 
-
+	// Call the register endpoint to get the token and user
 	accessToken, user, err := s.AuthService.Register(ctx, registerRequest)
 	if err != nil {
 		log.Printf("❌ IDENTITY: Service error: %v", err)
@@ -52,6 +53,7 @@ func (s *IdentityHandler) Register(ctx context.Context, req *pb.RegisterRequest)
 
 	log.Printf("✅ IDENTITY: User created: %+v", user)
 
+	// Return the auth response 
 	return &pb.AuthResponse{
 		RefreshToken: accessToken,
 		AccessToken: accessToken,
@@ -66,17 +68,36 @@ func (s *IdentityHandler) Register(ctx context.Context, req *pb.RegisterRequest)
 
 func (s *IdentityHandler) Login(ctx context.Context, req *pb.LoginRequest) (*pb.AuthResponse, error) {
 
+	log.Println("🔥 IDENTITY: Login gRPC handler reached")
 
-	// Call Identity Service using gRPC.
-	// user, err := h.identityRepo.Login(
-	// 	c.Request.Context(),
-	// 	&pb.LoginRequest{
-	// 		Email:    request.Email,
-	// 		Password: request.Password,
-	// 	},
-	// )
-	return nil, nil
+	// Prepare the request to login request
+	loginRequest := &requests.LoginRequest{
+		Email: req.Email,
+		Password: req.Password,
+	}
 
+	log.Printf("📥 IDENTITY: Request received: %+v", loginRequest)
+
+	// Call the login endpoint to get the token and user
+	accessToken, user, err := s.AuthService.Login(ctx, loginRequest)
+	if err != nil {
+		log.Printf("❌ IDENTITY: Service error: %v", err)
+
+		return nil, toGRPCError(err)
+	}
+
+	log.Printf("✅ IDENTITY: User created: %+v", user)
+
+	// Return the auth response 
+	return &pb.AuthResponse{
+		AccessToken: accessToken,
+		RefreshToken: accessToken,
+		User: &pb.User{
+			Name: user.Name,
+			Email: user.Email,
+			Phone: user.Phone,
+		},
+	}, nil
 }
 
 func (s *IdentityHandler) GetUser(ctx context.Context, req *pb.GetUserRequest) (*pb.User, error) {
@@ -136,14 +157,24 @@ func toGRPCError(err error) (error) {
 		return detailedStatus.Err()
 	}
 
-	// Validation error
-	var validationErrors validator.ValidationErrors
+	// Invalid credentials
+	var creadentialErr response.InvalidCredentialsError
 
-	if errors.As(err, &validationErrors) {
+	if errors.As(err, &creadentialErr) {
+		return status.Errorf(
+			codes.Unauthenticated,
+			creadentialErr.Error(),
+		)
+	}
+
+	// Validation error
+	var validationErr validator.ValidationErrors
+
+	if errors.As(err, &validationErr) {
 		return status.Errorf(
 			codes.InvalidArgument,
             "validation failed: %v",
-            validationErrors,
+            validationErr,
 		)
 	}
 
