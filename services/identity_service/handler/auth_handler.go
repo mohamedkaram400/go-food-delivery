@@ -2,19 +2,13 @@ package handler
 
 import (
 	"context"
-	"errors"
 	"log"
 
-	"github.com/go-playground/validator/v10"
 	pb "github.com/mohamed-karam/go-food-delivery/identity-service/proto/identity"
 	"github.com/mohamed-karam/go-food-delivery/identity-service/requests"
+	"github.com/mohamed-karam/go-food-delivery/identity-service/errors"
 	"github.com/mohamed-karam/go-food-delivery/identity-service/service"
 
-	"github.com/mohamed-karam/go-food-delivery/identity-service/response"
-	
-    "google.golang.org/genproto/googleapis/rpc/errdetails"
-    "google.golang.org/grpc/codes"
-    "google.golang.org/grpc/status"
 )
 
 
@@ -48,7 +42,7 @@ func (s *IdentityHandler) Register(ctx context.Context, req *pb.RegisterRequest)
 	if err != nil {
 		log.Printf("❌ IDENTITY: Service error: %v", err)
 
-		return nil, toGRPCError(err)
+		return nil, errors.ToGRPCError(err)
 	}
 
 	log.Printf("✅ IDENTITY: User created: %+v", user)
@@ -83,7 +77,7 @@ func (s *IdentityHandler) Login(ctx context.Context, req *pb.LoginRequest) (*pb.
 	if err != nil {
 		log.Printf("❌ IDENTITY: Service error: %v", err)
 
-		return nil, toGRPCError(err)
+		return nil, errors.ToGRPCError(err)
 	}
 
 	log.Printf("✅ IDENTITY: User created: %+v", user)
@@ -116,72 +110,3 @@ func (s *IdentityHandler) ValidateToken(ctx context.Context, req *pb.ValidateTok
 	return nil, nil
 }
 
-
-func toGRPCError(err error) (error) {
-
-	var registerErr response.RegisterError
-
-	if errors.As(err, &registerErr) {
-
-		st := status.New(
-			codes.AlreadyExists,
-			"registration failed",
-		)
-
-		var violations []*errdetails.BadRequest_FieldViolation
-
-		for field, message := range registerErr.Fields {
-			violations = append(
-				violations,
-				&errdetails.BadRequest_FieldViolation{
-					Field:       field,
-					Description: message,
-				},
-			)
-		}
-
-		detailedStatus, detailErr := st.WithDetails(
-			&errdetails.BadRequest{
-				FieldViolations: violations,
-			},
-		)
-
-		if detailErr != nil {
-			return status.Errorf(
-				codes.Internal,
-				"failed to create error details: %v",
-                detailErr,
-			)
-		}
-
-		return detailedStatus.Err()
-	}
-
-	// Invalid credentials
-	var creadentialErr response.InvalidCredentialsError
-
-	if errors.As(err, &creadentialErr) {
-		return status.Errorf(
-			codes.Unauthenticated,
-			creadentialErr.Error(),
-		)
-	}
-
-	// Validation error
-	var validationErr validator.ValidationErrors
-
-	if errors.As(err, &validationErr) {
-		return status.Errorf(
-			codes.InvalidArgument,
-            "validation failed: %v",
-            validationErr,
-		)
-	}
-
-	// Unexpected error
-	return status.Errorf(
-		codes.Internal,
-		"internal error: %v",
-        err,
-	)
-}
