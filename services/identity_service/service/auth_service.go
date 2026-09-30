@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"log"
-	"time"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/mohamed-karam/go-food-delivery/identity-service/response"
@@ -18,22 +17,24 @@ import (
 
 type AuthService struct {
 	identityRepo  *repo.IdentityRepo
-	TokenDuration int
+	AccessTokenDuration int
+	RefreshTokenDuration int
 }
 
-func NewAuthService(identityRepo *repo.IdentityRepo, tokenDuration int) *AuthService {
+func NewAuthService(identityRepo *repo.IdentityRepo, accessTokenDuration int, refreshTokenDuration int) *AuthService {
 	return &AuthService{
 		identityRepo:  identityRepo,
-		TokenDuration: tokenDuration,
+		AccessTokenDuration: accessTokenDuration,
+		RefreshTokenDuration: refreshTokenDuration,
 	}
 }
 
-func (s *AuthService) Register(ctx context.Context, req *requests.RegisterRequest) (string, *entity.User, error) {
+func (s *AuthService) Register(ctx context.Context, req *requests.RegisterRequest) (string, string,  *entity.User, error) {
 
 	// Check validation errors
 	validate := validator.New()
 	if err := validate.Struct(req); err != nil {
-		return "", nil, err
+		return "", "", nil, err
 	}
 
 	var fieldErrors = map[string]string{}
@@ -45,7 +46,7 @@ func (s *AuthService) Register(ctx context.Context, req *requests.RegisterReques
 	}
 
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-		return "", nil, err
+		return "", "", nil, err
 	}
 
 	// Check phone
@@ -55,11 +56,11 @@ func (s *AuthService) Register(ctx context.Context, req *requests.RegisterReques
 	}
 
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-		return "", nil, err
+		return "", "", nil, err
 	}
 
 	if len(fieldErrors) > 0 {
-		return "", nil, response.RegisterError{
+		return "", "", nil, response.RegisterError{
 			Fields: fieldErrors,
 		}
 	}
@@ -67,7 +68,7 @@ func (s *AuthService) Register(ctx context.Context, req *requests.RegisterReques
 	// Hash password
 	hashedPassword, err := pkg.HashPassword(req.Password)
 	if err != nil {
-		return "", nil, err
+		return "", "", nil, err
 	}
 
 	// Prepare user object
@@ -82,53 +83,63 @@ func (s *AuthService) Register(ctx context.Context, req *requests.RegisterReques
 	// Pass the user object to repo for creation
 	user, err := s.identityRepo.Register(ctx, userObj)
 	if err != nil {
-		return "", nil, err
+		return "", "", nil, err
 	}
 
 	log.Printf("User created: %+v", user)
 
 	// Generate access token for that user
-	accessToken, err := auth.GenerateAccessToken(user, time.Duration(s.TokenDuration)*time.Hour)
+	accessToken, err := auth.GenerateAccessToken(user, s.AccessTokenDuration)
 	if err != nil {
-		return "", nil, err
+		return "", "", nil, err
 	}
 
-	return accessToken, user, nil
+	refreshToken, err := auth.GenerateRefreshToken(user, s.RefreshTokenDuration)
+	if err != nil {
+		return "", "", nil, err
+	}
+
+	return accessToken, refreshToken, user, nil
 }
 
-func (s *AuthService) Login(ctx context.Context, req *requests.LoginRequest) (string, *entity.User, error) {
+func (s *AuthService) Login(ctx context.Context, req *requests.LoginRequest) (string, string, *entity.User, error) {
 
 	// Make validation in the request
 	validate := validator.New()
 	if err := validate.Struct(req); err != nil {
-		return "", nil, err
+		return "", "", nil, err
 	}
 
 	// Check if user/email exists or not 
 	exists, err := s.identityRepo.GetUserByEmail(ctx, req.Email)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return "", nil, response.InvalidCredentialsError{
+			return "", "", nil, response.InvalidCredentialsError{
 				Message: "Invalid email or password",
 			}
 		}
 
-		return "", nil, err
+		return "", "", nil, err
 	}
 
 	// Check from password
 	if err := pkg.CheckPassword(req.Password, exists.PasswordHash); err != nil {
-		return "", nil, response.InvalidCredentialsError{
+		return "", "", nil, response.InvalidCredentialsError{
 			Message: "The sended password doesn't match the user password",
 		}
 	}
 
-	accessToken, err := auth.GenerateAccessToken(exists, time.Duration(s.TokenDuration)*time.Hour)
+	accessToken, err := auth.GenerateAccessToken(exists, s.AccessTokenDuration)
 	if err != nil {
-		return "", nil, err
+		return "", "", nil, err
 	}
 
-	return accessToken, exists, nil
+	refreshToken, err := auth.GenerateRefreshToken(exists, s.RefreshTokenDuration)
+	if err != nil {
+		return "", "", nil, err
+	}
+
+	return accessToken, refreshToken, exists, nil
 }
 
 func (s *AuthService) GetUser(ctx context.Context, userId int) (*entity.User, error) {
@@ -138,13 +149,8 @@ func (s *AuthService) GetUser(ctx context.Context, userId int) (*entity.User, er
 
 func (s *AuthService) Logout(ctx context.Context, userId int) (*entity.User, error) {
 	return nil, nil
-
 }
 
-// func (s *AuthService) RefreshToken(ctx context.Context, req *requests.RefreshTokenRequest) (*requests.AuthResponse, error) {
-// 	return nil, nil
-// }
-
-// func (s *AuthService) ValidateToken(ctx context.Context, req *requests.ValidateTokenRequest) (*requests.ValidateTokenResponse, error) {
-// 	return nil, nil
-// }
+// Create table for refresh_tokens
+// Store refrash_token after generation at the table 
+// When click logout -> revoke refrash token from the DB 

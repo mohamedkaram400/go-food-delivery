@@ -14,13 +14,15 @@ type Config struct {
 	DSN   			  string
 	MigrationPath	  string
 	DatabaseURL		  string
-	TokenDuration		  int
+	AccessTokenDuration		int
+	RefreshTokenDuration	int
 }
 
 func Load() *Config {
 	_ = godotenv.Load()
 
-	tokenDuration, _ := strconv.Atoi(os.Getenv("TOKEN_DURATION"))
+	accessTokenDuration, _ := strconv.Atoi(os.Getenv("ACCESS_TOKEN_DURATION"))
+	refreshTokenDuration, _ := strconv.Atoi(os.Getenv("REFRESH_TOKEN_DURATION"))
 
 	return &Config{
 		Port:              getOrDefault(os.Getenv("SERVICE_PORT"), ":50051"),
@@ -28,7 +30,8 @@ func Load() *Config {
 		DatabaseURL: 	   os.Getenv("DATABASE_URL"),
 		MigrationPath:     os.Getenv("MIGRATION_PATH"),
 		DSN:   			   os.Getenv("DSN"),
-		TokenDuration:     tokenDuration,
+		AccessTokenDuration:      accessTokenDuration,
+		RefreshTokenDuration:     refreshTokenDuration,
 	}
 }
 
@@ -38,3 +41,4 @@ func getOrDefault(key string, def string) string {
 	}
 	return def
 }
+

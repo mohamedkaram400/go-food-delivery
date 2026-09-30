@@ -38,7 +38,7 @@ func (s *IdentityHandler) Register(ctx context.Context, req *pb.RegisterRequest)
 	log.Printf("📥 IDENTITY: Request received: %+v", registerRequest)
 
 	// Call the register endpoint to get the token and user
-	accessToken, user, err := s.AuthService.Register(ctx, registerRequest)
+	accessToken, refreshToken, user, err := s.AuthService.Register(ctx, registerRequest)
 	if err != nil {
 		log.Printf("❌ IDENTITY: Service error: %v", err)
 
@@ -50,7 +50,7 @@ func (s *IdentityHandler) Register(ctx context.Context, req *pb.RegisterRequest)
 	// Return the auth response 
 	return &pb.AuthResponse{
 		RefreshToken: accessToken,
-		AccessToken: accessToken,
+		AccessToken: refreshToken,
 		User: &pb.User{
 			Id:    int64(user.ID),
 			Name:  user.Name,
@@ -73,7 +73,7 @@ func (s *IdentityHandler) Login(ctx context.Context, req *pb.LoginRequest) (*pb.
 	log.Printf("📥 IDENTITY: Request received: %+v", loginRequest)
 
 	// Call the login endpoint to get the token and user
-	accessToken, user, err := s.AuthService.Login(ctx, loginRequest)
+	accessToken, refreshToken, user, err := s.AuthService.Login(ctx, loginRequest)
 	if err != nil {
 		log.Printf("❌ IDENTITY: Service error: %v", err)
 
@@ -85,7 +85,7 @@ func (s *IdentityHandler) Login(ctx context.Context, req *pb.LoginRequest) (*pb.
 	// Return the auth response 
 	return &pb.AuthResponse{
 		AccessToken: accessToken,
-		RefreshToken: accessToken,
+		RefreshToken: refreshToken,
 		User: &pb.User{
 			Name: user.Name,
 			Email: user.Email,
@@ -99,14 +99,6 @@ func (s *IdentityHandler) GetUser(ctx context.Context, req *pb.GetUserRequest) (
 }
 
 func (s *IdentityHandler) Logout(ctx context.Context, req *pb.LogoutRequest) (*pb.Empty, error) {
-	return nil, nil
-}
-
-func (s *IdentityHandler) RefreshToken(ctx context.Context, req *pb.RefreshTokenRequest) (*pb.AuthResponse, error) {
-	return nil, nil
-}
-
-func (s *IdentityHandler) ValidateToken(ctx context.Context, req *pb.ValidateTokenRequest) (*pb.ValidateTokenResponse, error) {
 	return nil, nil
 }
 

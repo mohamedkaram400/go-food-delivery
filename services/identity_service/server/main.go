@@ -55,7 +55,7 @@ func main() {
 	// ------------------------------------
 	grpcServer := grpc.NewServer()
     identityRepo := repo.NewIdentityRepo(mysql)
-    identityService := service.NewAuthService(identityRepo, cfg.TokenDuration)
+    identityService := service.NewAuthService(identityRepo, cfg.AccessTokenDuration, cfg.RefreshTokenDuration)
     grpcHandler := handler.NewIdentityHandler(identityService)
 
 	
