@@ -2,6 +2,8 @@ package repo
 
 import (
 	"context"
+	"errors"
+	"time"
 
 	"github.com/mohamed-karam/go-food-delivery/identity-service/entity"
 	"gorm.io/gorm"
@@ -44,3 +46,30 @@ func (r *IdentityRepo) GetUserByPhone(ctx context.Context, phone string) (*entit
 	}
 	return &user, nil
 }
+
+func (r *IdentityRepo) StoreRefreshToken(ctx context.Context, refreshToken *entity.RefreshToken) (error) {
+	if err := r.DB.WithContext(ctx).Create(refreshToken).Error; err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *IdentityRepo) RevokeRefreshToken(ctx context.Context, hashedToken string) (error) {
+	result := r.DB.WithContext(ctx).
+		Model(&entity.RefreshToken{}).
+		Where("token_hash = ?", hashedToken).
+		Where("revoked_at IS NULL").
+		Update("revoked_at", time.Now())
+
+	if result.Error != nil {
+        return result.Error
+    }
+
+    if result.RowsAffected == 0 {
+        return errors.New("refresh token not found or already revoked")
+    }
+
+    return nil
+}
+

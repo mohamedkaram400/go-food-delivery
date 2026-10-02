@@ -12,5 +12,6 @@ func AuthRoutes(rg *gin.RouterGroup, authHandler *handler.IdentityHandler) {
 	{
 		auth.POST("/register", authHandler.Register)
 		auth.POST("/login", authHandler.Login)
+		auth.POST("/logout", authHandler.Logout)
 	}
 }

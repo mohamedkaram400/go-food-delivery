@@ -3,15 +3,17 @@ package service
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
+	"time"
 
 	"github.com/go-playground/validator/v10"
-	"github.com/mohamed-karam/go-food-delivery/identity-service/response"
 	"github.com/mohamed-karam/go-food-delivery/identity-service/auth"
 	"github.com/mohamed-karam/go-food-delivery/identity-service/entity"
 	"github.com/mohamed-karam/go-food-delivery/identity-service/pkg"
 	"github.com/mohamed-karam/go-food-delivery/identity-service/repo"
 	"github.com/mohamed-karam/go-food-delivery/identity-service/requests"
+	"github.com/mohamed-karam/go-food-delivery/identity-service/response"
 	"gorm.io/gorm"
 )
 
@@ -99,6 +101,10 @@ func (s *AuthService) Register(ctx context.Context, req *requests.RegisterReques
 		return "", "", nil, err
 	}
 
+	if err := s.storeRefreshToken(ctx, refreshToken, user); err != nil {
+		return "", "", nil, err
+	}
+
 	return accessToken, refreshToken, user, nil
 }
 
@@ -139,17 +145,41 @@ func (s *AuthService) Login(ctx context.Context, req *requests.LoginRequest) (st
 		return "", "", nil, err
 	}
 
+	if err := s.storeRefreshToken(ctx, refreshToken, exists); err != nil {
+		return "", "", nil, err
+	}
+
 	return accessToken, refreshToken, exists, nil
 }
 
-func (s *AuthService) GetUser(ctx context.Context, userId int) (*entity.User, error) {
+func (s *AuthService) Logout(ctx context.Context, refreshToken string) error {
 
-	return nil, nil
+	hashedToken := pkg.HashToken(refreshToken)
+
+	if err := s.identityRepo.RevokeRefreshToken(ctx, hashedToken); err != nil {
+		return err
+	}
+
+	return nil
 }
 
-func (s *AuthService) Logout(ctx context.Context, userId int) (*entity.User, error) {
-	return nil, nil
+func (s *AuthService) storeRefreshToken(ctx context.Context, refreshToken string, user *entity.User) error {
+
+	hashedToken := pkg.HashToken(refreshToken)
+	expiresAt := time.Now().Add(time.Duration(s.RefreshTokenDuration))
+
+	refreshTokenData := entity.RefreshToken{
+		UserID: 		user.ID,
+		TokenHash: 		hashedToken,
+		ExpiresAt:		expiresAt,
+	}
+
+	if err := s.identityRepo.StoreRefreshToken(ctx, &refreshTokenData); err != nil {
+		return fmt.Errorf("failed to store refresh token: %w", err)
+	}
+	return nil
 }
+
 
 // Create table for refresh_tokens
 // Store refrash_token after generation at the table 

@@ -105,3 +105,34 @@ func (h *IdentityHandler) Login(c *gin.Context) {
 		Data: response,
 	})
 }
+
+
+func (h *IdentityHandler) Logout(c *gin.Context) {
+	var request struct {
+		RefreshToken string `json:"refresh_token"`
+	}
+
+	if err := c.ShouldBindJSON(&request); err != nil {
+		errors.WriteGRPCError(err, c)
+		return
+	}
+
+	// Call Identity Service using gRPC.
+	response, err := h.identityClient.Logout(
+		c.Request.Context(),
+		&pb.LogoutRequest{
+			RefreshToken:    request.RefreshToken,
+		},
+	)
+
+	if err != nil {
+		errors.WriteGRPCError(err, c)
+		return
+	}
+
+	c.JSON(http.StatusOK, res.APIResponse{
+		Success: true,
+		Message: "Logout successful",
+		Data: response,
+	})
+}

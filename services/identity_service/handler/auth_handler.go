@@ -94,11 +94,19 @@ func (s *IdentityHandler) Login(ctx context.Context, req *pb.LoginRequest) (*pb.
 	}, nil
 }
 
-func (s *IdentityHandler) GetUser(ctx context.Context, req *pb.GetUserRequest) (*pb.User, error) {
-	return nil, nil
-}
-
 func (s *IdentityHandler) Logout(ctx context.Context, req *pb.LogoutRequest) (*pb.Empty, error) {
-	return nil, nil
+	log.Println("🔥 IDENTITY: Logout gRPC handler reached")
+
+	err := s.AuthService.Logout(ctx, req.RefreshToken)
+	if err != nil {
+		log.Printf("❌ IDENTITY: Service error: %v", err)
+
+		return nil, errors.ToGRPCError(err)
+	}
+
+	log.Printf("✅ IDENTITY: User logout successful")
+
+	// Return the auth response 
+	return &pb.Empty{}, nil
 }
 
