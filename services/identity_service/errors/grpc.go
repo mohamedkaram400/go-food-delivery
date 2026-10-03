@@ -103,10 +103,9 @@ func ToGRPCError(err error) (error) {
 	}
 
 	// Unexpected error
-	return status.Errorf(
+	return status.Error(
 		codes.Internal,
-		"internal error: %v",
-        err,
+        err.Error(),
 	)
 }
 

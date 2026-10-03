@@ -97,8 +97,7 @@ func (s *IdentityHandler) Login(ctx context.Context, req *pb.LoginRequest) (*pb.
 func (s *IdentityHandler) Logout(ctx context.Context, req *pb.LogoutRequest) (*pb.Empty, error) {
 	log.Println("🔥 IDENTITY: Logout gRPC handler reached")
 
-	err := s.AuthService.Logout(ctx, req.RefreshToken)
-	if err != nil {
+	if err := s.AuthService.Logout(ctx, req.RefreshToken); err != nil {
 		log.Printf("❌ IDENTITY: Service error: %v", err)
 
 		return nil, errors.ToGRPCError(err)

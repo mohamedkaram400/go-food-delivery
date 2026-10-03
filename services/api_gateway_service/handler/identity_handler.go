@@ -118,7 +118,7 @@ func (h *IdentityHandler) Logout(c *gin.Context) {
 	}
 
 	// Call Identity Service using gRPC.
-	response, err := h.identityClient.Logout(
+	_, err := h.identityClient.Logout(
 		c.Request.Context(),
 		&pb.LogoutRequest{
 			RefreshToken:    request.RefreshToken,
@@ -133,6 +133,5 @@ func (h *IdentityHandler) Logout(c *gin.Context) {
 	c.JSON(http.StatusOK, res.APIResponse{
 		Success: true,
 		Message: "Logout successful",
-		Data: response,
 	})
 }

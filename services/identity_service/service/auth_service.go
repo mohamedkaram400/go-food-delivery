@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"errors"
-	"fmt"
 	"log"
 	"time"
 
@@ -175,7 +174,9 @@ func (s *AuthService) storeRefreshToken(ctx context.Context, refreshToken string
 	}
 
 	if err := s.identityRepo.StoreRefreshToken(ctx, &refreshTokenData); err != nil {
-		return fmt.Errorf("failed to store refresh token: %w", err)
+		log.Printf("failed to store refresh token: %w", err)
+		
+		return err
 	}
 	return nil
 }

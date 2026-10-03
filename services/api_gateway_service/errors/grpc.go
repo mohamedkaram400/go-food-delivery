@@ -1,10 +1,11 @@
 package errors
 
 import (
+	"fmt"
 	"net/http"
 
-	res "github.com/mohamed-karam/go-food-delivery/api-gateway-service/response"
 	"github.com/gin-gonic/gin"
+	res "github.com/mohamed-karam/go-food-delivery/api-gateway-service/response"
 	"google.golang.org/genproto/googleapis/rpc/errdetails"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -29,6 +30,7 @@ func WriteGRPCError(err error, c *gin.Context) {
 				Message: grpcStatus.Message(),
 				Errors: extractFieldErrors(grpcStatus),
 			})
+			return
 
 		case codes.AlreadyExists:
 			c.JSON(http.StatusConflict, res.APIResponse{
@@ -36,30 +38,35 @@ func WriteGRPCError(err error, c *gin.Context) {
 				Message: grpcStatus.Message(),
 				Errors: extractFieldErrors(grpcStatus),
 			})
+			return
 
 		case codes.Unauthenticated:
 			c.JSON(http.StatusUnauthorized, res.APIResponse{
 				Success: false,
 				Message: grpcStatus.Message(),
 			})
+			return
 
 		case codes.NotFound:
 			c.JSON(http.StatusNotFound, res.APIResponse{
             	Success: false,
 				Message: grpcStatus.Message(),
 			})
+			return
 
 		case codes.PermissionDenied:
 			c.JSON(http.StatusForbidden, res.APIResponse{
 				Success: false,
 				Message: grpcStatus.Message(),
 			})
+			return
 
 		default:
 			c.JSON(http.StatusInternalServerError, res.APIResponse{
 				Success: false,
-				Message: "Internal server error",
+				Message: grpcStatus.Message(),
 			})
+			return
 	}
 }
 
