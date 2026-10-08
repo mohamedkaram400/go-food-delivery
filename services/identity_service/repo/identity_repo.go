@@ -29,6 +29,18 @@ func (r *IdentityRepo) Register(ctx context.Context, user *entity.User) (*entity
 	return user, nil
 }
 
+func (r *IdentityRepo) GetUserByID(ctx context.Context, userID uint64) (*entity.User, error) {
+    var user entity.User
+
+    if err := r.DB.WithContext(ctx).
+        First(&user, userID).
+        Error; err != nil {
+        return nil, err
+    }
+
+    return &user, nil
+}
+
 func (r *IdentityRepo) GetUserByEmail(ctx context.Context, email string) (*entity.User, error) {
 	var user entity.User
 
@@ -48,11 +60,22 @@ func (r *IdentityRepo) GetUserByPhone(ctx context.Context, phone string) (*entit
 }
 
 func (r *IdentityRepo) StoreRefreshToken(ctx context.Context, refreshToken *entity.RefreshToken) (error) {
+
 	if err := r.DB.WithContext(ctx).Create(refreshToken).Error; err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func (r *IdentityRepo) GetRefreshToken(ctx context.Context, hashedToken string) (*entity.RefreshToken, error) {
+	var refreshToken entity.RefreshToken
+
+	if err := r.DB.WithContext(ctx).Where("token_hash = ?", hashedToken).First(&refreshToken).Error; err != nil {
+		return nil, err
+	}
+
+	return &refreshToken, nil
 }
 
 func (r *IdentityRepo) RevokeRefreshToken(ctx context.Context, hashedToken string) (error) {

@@ -1,7 +1,6 @@
 package errors
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -58,6 +57,13 @@ func WriteGRPCError(err error, c *gin.Context) {
 			c.JSON(http.StatusForbidden, res.APIResponse{
 				Success: false,
 				Message: grpcStatus.Message(),
+			})
+			return
+
+		case codes.Unavailable:
+			c.JSON(http.StatusServiceUnavailable, res.APIResponse{
+				Success: false,
+				Message: "Identity service is currently unavailable. Please try again later.",
 			})
 			return
 

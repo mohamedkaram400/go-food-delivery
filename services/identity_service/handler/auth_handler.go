@@ -109,3 +109,20 @@ func (s *IdentityHandler) Logout(ctx context.Context, req *pb.LogoutRequest) (*p
 	return &pb.Empty{}, nil
 }
 
+func (s *IdentityHandler) RefreshToken(ctx context.Context, req *pb.RefreshTokenRequest) (*pb.AuthResponse, error) {
+	log.Println("🔥 IDENTITY: RefreshToken gRPC handler reached")
+
+	accessToken, err := s.AuthService.RefreshToken(ctx, req.RefreshToken) 
+	if err != nil {
+		log.Printf("❌ IDENTITY: Service error: %v", err)
+
+		return nil, errors.ToGRPCError(err)
+	}
+
+	log.Printf("✅ IDENTITY: Access token generated successful")
+
+	// Return the auth response 
+	return &pb.AuthResponse{
+		AccessToken: accessToken,
+	}, nil
+}

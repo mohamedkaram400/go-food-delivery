@@ -162,6 +162,47 @@ func (s *AuthService) Logout(ctx context.Context, refreshToken string) error {
 	return nil
 }
 
+func (s *AuthService) RefreshToken(ctx context.Context, refreshToken string) (string, error) {
+	// Validate the refresh token and extract its claims.
+    _, err := auth.ValidateRefreshToken(refreshToken)
+    if err != nil {
+        return "", err
+    }
+
+	// Hash the refresh token.
+    hashedToken := pkg.HashToken(refreshToken)
+
+	// Find the stored refresh token.
+    storedToken, err := s.identityRepo.GetRefreshToken(ctx, hashedToken)
+    if err != nil {
+        return "", err
+    }
+
+	// Verify that the refresh token is still valid in the database.
+    if storedToken.RevokedAt != nil {
+        return "", errors.New("refresh token has been revoked")
+    }
+
+    if !storedToken.ExpiresAt.After(time.Now()) {
+        return "", errors.New("refresh token has expired")
+    }
+
+	// Get the user
+	user, err := s.identityRepo.GetUserByID(ctx, uint64(storedToken.UserID))
+	if err != nil {
+        return "", err
+	}
+
+	// Generate a new access token for this user
+	accessToken, err := auth.GenerateAccessToken(user, s.AccessTokenDuration)
+	if err != nil {
+		return "", err
+	}
+
+	// Return access token
+	return accessToken, nil
+}
+
 func (s *AuthService) storeRefreshToken(ctx context.Context, refreshToken string, user *entity.User) error {
 
 	hashedToken := pkg.HashToken(refreshToken)

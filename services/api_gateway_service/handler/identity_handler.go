@@ -106,7 +106,6 @@ func (h *IdentityHandler) Login(c *gin.Context) {
 	})
 }
 
-
 func (h *IdentityHandler) Logout(c *gin.Context) {
 	var request struct {
 		RefreshToken string `json:"refresh_token"`
@@ -133,5 +132,36 @@ func (h *IdentityHandler) Logout(c *gin.Context) {
 	c.JSON(http.StatusOK, res.APIResponse{
 		Success: true,
 		Message: "Logout successful",
+	})
+}
+
+func (h *IdentityHandler) RefreshToken(c *gin.Context) {
+
+	var request struct {
+		RefreshToken string `json:"refresh_token"`
+	}
+
+	if err := c.ShouldBindJSON(request); err != nil {
+		errors.WriteGRPCError(err, c)
+		return 
+	}
+
+	// Refresh token enpoint through gRPC
+	accessToken, err := h.identityClient.RefreshToken(
+		c.Request.Context(),
+		&pb.RefreshTokenRequest{
+			RefreshToken: request.RefreshToken,
+		},
+	)
+
+	if err != nil {
+		errors.WriteGRPCError(err, c)
+		return 
+	}
+
+	c.JSON(http.StatusCreated, res.APIResponse{
+		Success: true,
+		Message: "Access token generated successful",
+		Data: accessToken,
 	})
 }
