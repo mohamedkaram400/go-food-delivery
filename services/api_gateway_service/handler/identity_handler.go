@@ -141,7 +141,7 @@ func (h *IdentityHandler) RefreshToken(c *gin.Context) {
 		RefreshToken string `json:"refresh_token"`
 	}
 
-	if err := c.ShouldBindJSON(request); err != nil {
+	if err := c.ShouldBindJSON(&request); err != nil {
 		errors.WriteGRPCError(err, c)
 		return 
 	}

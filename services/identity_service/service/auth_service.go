@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
 	"time"
 
@@ -164,11 +165,11 @@ func (s *AuthService) Logout(ctx context.Context, refreshToken string) error {
 
 func (s *AuthService) RefreshToken(ctx context.Context, refreshToken string) (string, error) {
 	// Validate the refresh token and extract its claims.
-    _, err := auth.ValidateRefreshToken(refreshToken)
+    claims, err := auth.ValidateRefreshToken(refreshToken)
     if err != nil {
         return "", err
     }
-
+	
 	// Hash the refresh token.
     hashedToken := pkg.HashToken(refreshToken)
 
@@ -178,16 +179,30 @@ func (s *AuthService) RefreshToken(ctx context.Context, refreshToken string) (st
         return "", err
     }
 
+	// Convert the user_id from float to int
+	sub, ok := claims["sub"].(float64)
+	if !ok {
+		return "", fmt.Errorf("invalid JWT subject type: %T", claims["sub"])
+	}
+
+	userID := int(sub)
+
+    // Ensure the token belongs to the same user.
+    if int(storedToken.UserID) != userID {
+        return "", errors.New("refresh token user mismatch")
+    }
+
 	// Verify that the refresh token is still valid in the database.
     if storedToken.RevokedAt != nil {
         return "", errors.New("refresh token has been revoked")
     }
 
+	// Refresh token expired
     if !storedToken.ExpiresAt.After(time.Now()) {
         return "", errors.New("refresh token has expired")
     }
 
-	// Get the user
+	// Get the user by ID
 	user, err := s.identityRepo.GetUserByID(ctx, uint64(storedToken.UserID))
 	if err != nil {
         return "", err
@@ -206,7 +221,9 @@ func (s *AuthService) RefreshToken(ctx context.Context, refreshToken string) (st
 func (s *AuthService) storeRefreshToken(ctx context.Context, refreshToken string, user *entity.User) error {
 
 	hashedToken := pkg.HashToken(refreshToken)
-	expiresAt := time.Now().Add(time.Duration(s.RefreshTokenDuration))
+	expiresAt := time.Now().Add(
+        time.Duration(s.RefreshTokenDuration) * 24 * time.Hour,
+    )
 
 	refreshTokenData := entity.RefreshToken{
 		UserID: 		user.ID,
@@ -221,8 +238,3 @@ func (s *AuthService) storeRefreshToken(ctx context.Context, refreshToken string
 	}
 	return nil
 }
-
-
-// Create table for refresh_tokens
-// Store refrash_token after generation at the table 
-// When click logout -> revoke refrash token from the DB 
