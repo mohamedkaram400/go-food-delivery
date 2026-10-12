@@ -50,13 +50,36 @@ func (r *IdentityRepo) GetUserByEmail(ctx context.Context, email string) (*entit
 	return &user, nil
 }
 
-func (r *IdentityRepo) GetUserByPhone(ctx context.Context, phone string) (*entity.User, error) {
-	var user entity.User
+func (r *IdentityRepo) CheckUserByPhone(ctx context.Context, phone string) (bool, error) {
+	var count int64
 
-	if err := r.DB.WithContext(ctx).Where("phone = ?", phone).First(&user).Error; err != nil {
-		return nil, err
+	err := r.DB.WithContext(ctx).
+		Model(&entity.User{}).
+		Where("phone = ?", phone).
+		Count(&count).
+		Error
+	
+	if err != nil {
+		return false, err
 	}
-	return &user, nil
+
+	return count > 0, nil
+}
+
+func (r *IdentityRepo) CheckRoleByID(ctx context.Context, roleID int) (bool, error) {
+	var count int64
+	
+	err := r.DB.WithContext(ctx).
+		Model(&entity.Role{}).
+		Where("id = ?", roleID).
+		Count(&count).
+		Error
+		
+	if err != nil {
+		return false, err
+	}	
+
+	return count > 0, nil
 }
 
 func (r *IdentityRepo) StoreRefreshToken(ctx context.Context, refreshToken *entity.RefreshToken) (error) {
@@ -95,4 +118,3 @@ func (r *IdentityRepo) RevokeRefreshToken(ctx context.Context, hashedToken strin
 
     return nil
 }
-

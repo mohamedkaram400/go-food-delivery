@@ -41,26 +41,35 @@ func (s *AuthService) Register(ctx context.Context, req *requests.RegisterReques
 
 	var fieldErrors = map[string]string{}
 
-	// Check email
-	emailExisting, err := s.identityRepo.GetUserByEmail(ctx, req.Email)
-	if err == nil && emailExisting != nil {
+	// Check on email if it exists return error message 
+	existingUser, err := s.identityRepo.GetUserByEmail(ctx, req.Email)
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return "", "", nil, err
+	}
+
+	if existingUser != nil {
 		fieldErrors["email"] = "email already exists"
 	}
 
+	// Check on phone if it exists return error message 
+	phoneExists, err := s.identityRepo.CheckUserByPhone(ctx, req.Phone)
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return "", "", nil, err
 	}
 
-	// Check phone
-	phoneExisting, err := s.identityRepo.GetUserByPhone(ctx, req.Phone)
-	if err == nil && phoneExisting != nil {
+	if phoneExists {
 		fieldErrors["phone"] = "phone already exists"
 	}
 
-	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+	// Check on role if it exists continue 
+	roleExists, err := s.identityRepo.CheckRoleByID(ctx, req.RoleID)
+	if err != nil {
 		return "", "", nil, err
 	}
-
+	if !roleExists {
+		fieldErrors["role"] = "role not found"
+	}
+	
 	if len(fieldErrors) > 0 {
 		return "", "", nil, response.RegisterError{
 			Fields: fieldErrors,
@@ -72,6 +81,7 @@ func (s *AuthService) Register(ctx context.Context, req *requests.RegisterReques
 	if err != nil {
 		return "", "", nil, err
 	}
+
 
 	// Prepare user object
 	userObj := &entity.User{
@@ -88,7 +98,7 @@ func (s *AuthService) Register(ctx context.Context, req *requests.RegisterReques
 		return "", "", nil, err
 	}
 
-	log.Printf("User created: %+v", user)
+	log.Printf("User created successfully: user_id=%d", user.ID)
 
 	// Generate access token for that user
 	accessToken, err := auth.GenerateAccessToken(user, s.AccessTokenDuration)
@@ -232,9 +242,10 @@ func (s *AuthService) storeRefreshToken(ctx context.Context, refreshToken string
 	}
 
 	if err := s.identityRepo.StoreRefreshToken(ctx, &refreshTokenData); err != nil {
-		log.Printf("failed to store refresh token: %w", err)
+		log.Printf("failed to store refresh token: %v", err)
 		
 		return err
 	}
 	return nil
 }
+
