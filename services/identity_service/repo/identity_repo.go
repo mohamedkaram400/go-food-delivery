@@ -19,14 +19,23 @@ func NewIdentityRepo(db *gorm.DB) *IdentityRepo {
 		DB: db,
 	}
 }
- 
-func (r *IdentityRepo) Register(ctx context.Context, user *entity.User) (*entity.User, error) {
-	
-	if err := r.DB.WithContext(ctx).Create(user).Error; err != nil {
-		return nil, err
-	}
 
-	return user, nil
+func (r *IdentityRepo) Transaction(
+    ctx context.Context,
+    fn func(tx *gorm.DB) error,
+) error {
+    return r.DB.WithContext(ctx).Transaction(fn)
+}
+ 
+func (r *IdentityRepo) Register(tx *gorm.DB, user *entity.User) (error) {
+	
+	return tx.Create(user).Error
+
+	// if err := r.DB.WithContext(ctx).Create(user).Error; err != nil {
+	// 	return nil, err
+	// }
+
+	// return user, nil
 }
 
 func (r *IdentityRepo) GetUserByID(ctx context.Context, userID uint64) (*entity.User, error) {
@@ -82,13 +91,14 @@ func (r *IdentityRepo) CheckRoleByID(ctx context.Context, roleID int) (bool, err
 	return count > 0, nil
 }
 
-func (r *IdentityRepo) StoreRefreshToken(ctx context.Context, refreshToken *entity.RefreshToken) (error) {
+func (r *IdentityRepo) StoreRefreshToken(tx *gorm.DB, refreshToken *entity.RefreshToken) (error) {
+	return tx.Create(refreshToken).Error
+	
+	// if err := r.DB.WithContext(ctx).Create(refreshToken).Error; err != nil {
+	// 	return err
+	// }
 
-	if err := r.DB.WithContext(ctx).Create(refreshToken).Error; err != nil {
-		return err
-	}
-
-	return nil
+	// return nil
 }
 
 func (r *IdentityRepo) GetRefreshToken(ctx context.Context, hashedToken string) (*entity.RefreshToken, error) {

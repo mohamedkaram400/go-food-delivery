@@ -82,40 +82,58 @@ func (s *AuthService) Register(ctx context.Context, req *requests.RegisterReques
 		return "", "", nil, err
 	}
 
+	var (
+		accessToken  string
+		refreshToken string
+		createdUser  *entity.User
+	)
 
-	// Prepare user object
-	userObj := &entity.User{
-		Name:         req.Name,
-		Email:        req.Email,
-		Phone:        req.Phone,
-		RoleID:       req.RoleID,
-		PasswordHash: hashedPassword,
+	txErr := s.identityRepo.Transaction(ctx, func(tx *gorm.DB) error {
+		// Create the user inside the transaction.
+
+		// Prepare user object
+		user := &entity.User{
+			Name:         req.Name,
+			Email:        req.Email,
+			Phone:        req.Phone,
+			RoleID:       req.RoleID,
+			PasswordHash: hashedPassword,
+		}
+
+		// Pass the user object to repo for creation
+		if err := s.identityRepo.Register(tx, user); err != nil {
+			return err
+		}
+
+		log.Printf("User created successfully: user_id=%d", user.ID)
+
+		// Generate access token for that user
+		accessToken, err = auth.GenerateAccessToken(user, s.AccessTokenDuration)
+		if err != nil {
+			return err
+		}
+
+		// Generate refresh token
+		refreshToken, err = auth.GenerateRefreshToken(user, s.RefreshTokenDuration)
+		if err != nil {
+			return err
+		}
+
+		// Store the refresh token
+		if err := s.storeRefreshToken(tx, refreshToken, user); err != nil {
+			return err
+		}
+
+		createdUser = user
+
+		return nil
+	})
+
+	if txErr != nil {
+		return "", "", nil, txErr
 	}
 
-	// Pass the user object to repo for creation
-	user, err := s.identityRepo.Register(ctx, userObj)
-	if err != nil {
-		return "", "", nil, err
-	}
-
-	log.Printf("User created successfully: user_id=%d", user.ID)
-
-	// Generate access token for that user
-	accessToken, err := auth.GenerateAccessToken(user, s.AccessTokenDuration)
-	if err != nil {
-		return "", "", nil, err
-	}
-
-	refreshToken, err := auth.GenerateRefreshToken(user, s.RefreshTokenDuration)
-	if err != nil {
-		return "", "", nil, err
-	}
-
-	if err := s.storeRefreshToken(ctx, refreshToken, user); err != nil {
-		return "", "", nil, err
-	}
-
-	return accessToken, refreshToken, user, nil
+	return accessToken, refreshToken, createdUser, nil
 }
 
 func (s *AuthService) Login(ctx context.Context, req *requests.LoginRequest) (string, string, *entity.User, error) {
@@ -155,7 +173,7 @@ func (s *AuthService) Login(ctx context.Context, req *requests.LoginRequest) (st
 		return "", "", nil, err
 	}
 
-	if err := s.storeRefreshToken(ctx, refreshToken, exists); err != nil {
+	if err := s.storeRefreshToken(s.identityRepo.DB.WithContext(ctx), refreshToken, exists); err != nil {
 		return "", "", nil, err
 	}
 
@@ -228,7 +246,7 @@ func (s *AuthService) RefreshToken(ctx context.Context, refreshToken string) (st
 	return accessToken, nil
 }
 
-func (s *AuthService) storeRefreshToken(ctx context.Context, refreshToken string, user *entity.User) error {
+func (s *AuthService) storeRefreshToken(tx *gorm.DB, refreshToken string, user *entity.User) error {
 
 	hashedToken := pkg.HashToken(refreshToken)
 	expiresAt := time.Now().Add(
@@ -241,7 +259,7 @@ func (s *AuthService) storeRefreshToken(ctx context.Context, refreshToken string
 		ExpiresAt:		expiresAt,
 	}
 
-	if err := s.identityRepo.StoreRefreshToken(ctx, &refreshTokenData); err != nil {
+	if err := s.identityRepo.StoreRefreshToken(tx, &refreshTokenData); err != nil {
 		log.Printf("failed to store refresh token: %v", err)
 		
 		return err
