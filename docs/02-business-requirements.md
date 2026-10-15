@@ -9,6 +9,7 @@ Authentication
 --------------
 Register
 Login
+RefreshToken
 Logout
 
 Restaurant Browsing

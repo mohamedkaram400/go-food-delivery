@@ -1,0 +1,47 @@
+syntax = "proto3";
+
+package identity;
+
+option go_package = "github.com/mohamed-karam/go-food-delivery/proto/identity";
+
+
+
+service AddressService {
+    rpc ListAddresses(ListAddressesRequest) returns (ListAddressesResponse);
+    rpc CreateAddress(CreateAddressesRequest) returns (AddressResponse);
+    rpc UpdateAddress(UpdateAddressRequest) returns (AddressResponse);
+    rpc DeleteAddress(DeleteAddressRequest) returns (DeleteAddressResponse);
+}
+
+message ListAddressesRequest {}
+
+message CreateAddressesRequest {
+    repeated string addresses = 1;
+}
+
+message UpdateAddressRequest {
+    int64 address_id = 1;
+    string address = 2;
+}
+
+message DeleteAddressRequest {
+    int64 address_id = 1;
+}
+
+message AddressResponse {
+    int64 id = 1;
+    string address = 2;
+}
+
+message ListAddressesResponse {
+    repeated AddressResponse addresses = 1;
+}
+
+message DeleteAddressResponse {
+    bool success = 1;
+}
+
+
+
+
+
