@@ -10,24 +10,24 @@ import (
 )
 
 
-type IdentityRepo struct {
+type AuthRepo struct {
     DB *gorm.DB
 }
 
-func NewIdentityRepo(db *gorm.DB) *IdentityRepo {
-	return &IdentityRepo{
+func NewAuthRepo(db *gorm.DB) *AuthRepo {
+	return &AuthRepo{
 		DB: db,
 	}
 }
 
-func (r *IdentityRepo) Transaction(
+func (r *AuthRepo) Transaction(
     ctx context.Context,
     fn func(tx *gorm.DB) error,
 ) error {
     return r.DB.WithContext(ctx).Transaction(fn)
 }
  
-func (r *IdentityRepo) Register(tx *gorm.DB, user *entity.User) (error) {
+func (r *AuthRepo) Register(tx *gorm.DB, user *entity.User) (error) {
 	
 	return tx.Create(user).Error
 
@@ -38,7 +38,7 @@ func (r *IdentityRepo) Register(tx *gorm.DB, user *entity.User) (error) {
 	// return user, nil
 }
 
-func (r *IdentityRepo) GetUserByID(ctx context.Context, userID uint64) (*entity.User, error) {
+func (r *AuthRepo) GetUserByID(ctx context.Context, userID uint64) (*entity.User, error) {
     var user entity.User
 
     if err := r.DB.WithContext(ctx).
@@ -50,7 +50,7 @@ func (r *IdentityRepo) GetUserByID(ctx context.Context, userID uint64) (*entity.
     return &user, nil
 }
 
-func (r *IdentityRepo) GetUserByEmail(ctx context.Context, email string) (*entity.User, error) {
+func (r *AuthRepo) GetUserByEmail(ctx context.Context, email string) (*entity.User, error) {
 	var user entity.User
 
 	if err := r.DB.WithContext(ctx).Where("email = ?", email).First(&user).Error; err != nil {
@@ -59,7 +59,7 @@ func (r *IdentityRepo) GetUserByEmail(ctx context.Context, email string) (*entit
 	return &user, nil
 }
 
-func (r *IdentityRepo) CheckUserByPhone(ctx context.Context, phone string) (bool, error) {
+func (r *AuthRepo) CheckUserByPhone(ctx context.Context, phone string) (bool, error) {
 	var count int64
 
 	err := r.DB.WithContext(ctx).
@@ -75,7 +75,7 @@ func (r *IdentityRepo) CheckUserByPhone(ctx context.Context, phone string) (bool
 	return count > 0, nil
 }
 
-func (r *IdentityRepo) CheckRoleByID(ctx context.Context, roleID int) (bool, error) {
+func (r *AuthRepo) CheckRoleByID(ctx context.Context, roleID int) (bool, error) {
 	var count int64
 	
 	err := r.DB.WithContext(ctx).
@@ -91,7 +91,7 @@ func (r *IdentityRepo) CheckRoleByID(ctx context.Context, roleID int) (bool, err
 	return count > 0, nil
 }
 
-func (r *IdentityRepo) StoreRefreshToken(tx *gorm.DB, refreshToken *entity.RefreshToken) (error) {
+func (r *AuthRepo) StoreRefreshToken(tx *gorm.DB, refreshToken *entity.RefreshToken) (error) {
 	return tx.Create(refreshToken).Error
 	
 	// if err := r.DB.WithContext(ctx).Create(refreshToken).Error; err != nil {
@@ -101,7 +101,7 @@ func (r *IdentityRepo) StoreRefreshToken(tx *gorm.DB, refreshToken *entity.Refre
 	// return nil
 }
 
-func (r *IdentityRepo) GetRefreshToken(ctx context.Context, hashedToken string) (*entity.RefreshToken, error) {
+func (r *AuthRepo) GetRefreshToken(ctx context.Context, hashedToken string) (*entity.RefreshToken, error) {
 	var refreshToken entity.RefreshToken
 
 	if err := r.DB.WithContext(ctx).Where("token_hash = ?", hashedToken).First(&refreshToken).Error; err != nil {
@@ -111,7 +111,7 @@ func (r *IdentityRepo) GetRefreshToken(ctx context.Context, hashedToken string) 
 	return &refreshToken, nil
 }
 
-func (r *IdentityRepo) RevokeRefreshToken(ctx context.Context, hashedToken string) (error) {
+func (r *AuthRepo) RevokeRefreshToken(ctx context.Context, hashedToken string) (error) {
 	result := r.DB.WithContext(ctx).
 		Model(&entity.RefreshToken{}).
 		Where("token_hash = ?", hashedToken).
@@ -128,3 +128,4 @@ func (r *IdentityRepo) RevokeRefreshToken(ctx context.Context, hashedToken strin
 
     return nil
 }
+

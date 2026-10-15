@@ -2,11 +2,11 @@ package routes
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/mohamed-karam/go-food-delivery/api-gateway-service/handler"
+	"github.com/mohamed-karam/go-food-delivery/api-gateway-service/handler/identity"
 )
 
 
-func AuthRoutes(rg *gin.RouterGroup, authHandler *handler.IdentityHandler) {
+func AuthRoutes(rg *gin.RouterGroup, authHandler *handler.AuthHandler) {
 	auth := rg.Group("/auth")
 
 	{

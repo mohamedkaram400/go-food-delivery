@@ -54,12 +54,12 @@ func main() {
 	// Identity Service
 	// ------------------------------------
 	grpcServer := grpc.NewServer()
-    identityRepo := repo.NewIdentityRepo(mysql)
+    identityRepo := repo.NewAuthRepo(mysql)
     identityService := service.NewAuthService(identityRepo, cfg.AccessTokenDuration, cfg.RefreshTokenDuration)
-    grpcHandler := handler.NewIdentityHandler(identityService)
+    grpcHandler := handler.NewAuthHandler(identityService)
 
 	
-	pb.RegisterIdentityServiceServer(grpcServer, grpcHandler)
+	pb.RegisterAuthServiceServer(grpcServer, grpcHandler)
 
 	// ------------------------------------
 	// Start gRPC server

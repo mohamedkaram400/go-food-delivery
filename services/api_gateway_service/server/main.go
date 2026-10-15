@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/mohamed-karam/go-food-delivery/api-gateway-service/client"
 	"github.com/mohamed-karam/go-food-delivery/api-gateway-service/config"
-	"github.com/mohamed-karam/go-food-delivery/api-gateway-service/handler"
+	"github.com/mohamed-karam/go-food-delivery/api-gateway-service/handler/identity"
 	"github.com/mohamed-karam/go-food-delivery/api-gateway-service/routes"
 )
 
@@ -17,20 +17,20 @@ func main() {
 	cfg := config.Load()
 
     // ------------------------------------
-	// Connect to Identity Service
+	// Connect to Auth Service
     // ------------------------------------
-	identityClient, identityConn, err := client.NewIdentityClient(cfg.IdentityService)
+	authClient, authConn, err := client.NewIdentityClient(cfg.IdentityService)
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	defer identityConn.Close()
+	defer authConn.Close()
     // ------------------------------------
 	// Register REST endpoint
 	// ------------------------------------
 
-	identityHandler := handler.NewIdentityHandler(identityClient)
+	authHandler := handler.NewAuthHandler(authClient)
 
 
 	router := gin.Default()
@@ -41,7 +41,7 @@ func main() {
 	v1 := router.Group("/api/v1")
 
 
-	routes.AuthRoutes(v1, identityHandler)
+	routes.AuthRoutes(v1, authHandler)
 
 	// ------------------------------------
 	// Start REST server

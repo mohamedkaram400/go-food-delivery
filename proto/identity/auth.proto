@@ -6,7 +6,7 @@ option go_package = "github.com/mohamed-karam/go-food-delivery/proto/identity";
 
 
 
-service IdentityService {
+service AuthService {
 
     rpc Register(RegisterRequest) returns (AuthResponse);
 

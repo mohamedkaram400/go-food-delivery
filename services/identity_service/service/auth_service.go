@@ -18,14 +18,14 @@ import (
 )
 
 type AuthService struct {
-	identityRepo  *repo.IdentityRepo
+	AuthRepo  *repo.AuthRepo
 	AccessTokenDuration int
 	RefreshTokenDuration int
 }
 
-func NewAuthService(identityRepo *repo.IdentityRepo, accessTokenDuration int, refreshTokenDuration int) *AuthService {
+func NewAuthService(authRepo *repo.AuthRepo, accessTokenDuration int, refreshTokenDuration int) *AuthService {
 	return &AuthService{
-		identityRepo:  identityRepo,
+		AuthRepo:  authRepo,
 		AccessTokenDuration: accessTokenDuration,
 		RefreshTokenDuration: refreshTokenDuration,
 	}
@@ -42,7 +42,7 @@ func (s *AuthService) Register(ctx context.Context, req *requests.RegisterReques
 	var fieldErrors = map[string]string{}
 
 	// Check on email if it exists return error message 
-	existingUser, err := s.identityRepo.GetUserByEmail(ctx, req.Email)
+	existingUser, err := s.AuthRepo.GetUserByEmail(ctx, req.Email)
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return "", "", nil, err
 	}
@@ -52,7 +52,7 @@ func (s *AuthService) Register(ctx context.Context, req *requests.RegisterReques
 	}
 
 	// Check on phone if it exists return error message 
-	phoneExists, err := s.identityRepo.CheckUserByPhone(ctx, req.Phone)
+	phoneExists, err := s.AuthRepo.CheckUserByPhone(ctx, req.Phone)
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return "", "", nil, err
 	}
@@ -62,7 +62,7 @@ func (s *AuthService) Register(ctx context.Context, req *requests.RegisterReques
 	}
 
 	// Check on role if it exists continue 
-	roleExists, err := s.identityRepo.CheckRoleByID(ctx, req.RoleID)
+	roleExists, err := s.AuthRepo.CheckRoleByID(ctx, req.RoleID)
 	if err != nil {
 		return "", "", nil, err
 	}
@@ -88,7 +88,7 @@ func (s *AuthService) Register(ctx context.Context, req *requests.RegisterReques
 		createdUser  *entity.User
 	)
 
-	txErr := s.identityRepo.Transaction(ctx, func(tx *gorm.DB) error {
+	txErr := s.AuthRepo.Transaction(ctx, func(tx *gorm.DB) error {
 		// Create the user inside the transaction.
 
 		// Prepare user object
@@ -101,7 +101,7 @@ func (s *AuthService) Register(ctx context.Context, req *requests.RegisterReques
 		}
 
 		// Pass the user object to repo for creation
-		if err := s.identityRepo.Register(tx, user); err != nil {
+		if err := s.AuthRepo.Register(tx, user); err != nil {
 			return err
 		}
 
@@ -145,7 +145,7 @@ func (s *AuthService) Login(ctx context.Context, req *requests.LoginRequest) (st
 	}
 
 	// Check if user/email exists or not 
-	exists, err := s.identityRepo.GetUserByEmail(ctx, req.Email)
+	exists, err := s.AuthRepo.GetUserByEmail(ctx, req.Email)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return "", "", nil, response.InvalidCredentialsError{
@@ -173,7 +173,7 @@ func (s *AuthService) Login(ctx context.Context, req *requests.LoginRequest) (st
 		return "", "", nil, err
 	}
 
-	if err := s.storeRefreshToken(s.identityRepo.DB.WithContext(ctx), refreshToken, exists); err != nil {
+	if err := s.storeRefreshToken(s.AuthRepo.DB.WithContext(ctx), refreshToken, exists); err != nil {
 		return "", "", nil, err
 	}
 
@@ -184,7 +184,7 @@ func (s *AuthService) Logout(ctx context.Context, refreshToken string) error {
 
 	hashedToken := pkg.HashToken(refreshToken)
 
-	if err := s.identityRepo.RevokeRefreshToken(ctx, hashedToken); err != nil {
+	if err := s.AuthRepo.RevokeRefreshToken(ctx, hashedToken); err != nil {
 		return err
 	}
 
@@ -202,7 +202,7 @@ func (s *AuthService) RefreshToken(ctx context.Context, refreshToken string) (st
     hashedToken := pkg.HashToken(refreshToken)
 
 	// Find the stored refresh token.
-    storedToken, err := s.identityRepo.GetRefreshToken(ctx, hashedToken)
+    storedToken, err := s.AuthRepo.GetRefreshToken(ctx, hashedToken)
     if err != nil {
         return "", err
     }
@@ -231,7 +231,7 @@ func (s *AuthService) RefreshToken(ctx context.Context, refreshToken string) (st
     }
 
 	// Get the user by ID
-	user, err := s.identityRepo.GetUserByID(ctx, uint64(storedToken.UserID))
+	user, err := s.AuthRepo.GetUserByID(ctx, uint64(storedToken.UserID))
 	if err != nil {
         return "", err
 	}
@@ -259,7 +259,7 @@ func (s *AuthService) storeRefreshToken(tx *gorm.DB, refreshToken string, user *
 		ExpiresAt:		expiresAt,
 	}
 
-	if err := s.identityRepo.StoreRefreshToken(tx, &refreshTokenData); err != nil {
+	if err := s.AuthRepo.StoreRefreshToken(tx, &refreshTokenData); err != nil {
 		log.Printf("failed to store refresh token: %v", err)
 		
 		return err

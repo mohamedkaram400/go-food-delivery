@@ -11,17 +11,17 @@ import (
 )
 
 
-type IdentityHandler struct {
-	identityClient pb.IdentityServiceClient
+type AuthHandler struct {
+	authClient pb.AuthServiceClient
 }
 
-func NewIdentityHandler(identityClient pb.IdentityServiceClient) *IdentityHandler {
-	return &IdentityHandler{
-		identityClient: identityClient,
+func NewAuthHandler(authClient pb.AuthServiceClient) *AuthHandler {
+	return &AuthHandler{
+		authClient: authClient,
 	}
 }
 
-func (h *IdentityHandler) Register(c *gin.Context) {
+func (h *AuthHandler) Register(c *gin.Context) {
 	var request struct {
 		Name    string `json:"name"`
 		Email    string `json:"email"`
@@ -44,7 +44,7 @@ func (h *IdentityHandler) Register(c *gin.Context) {
 	log.Printf("Email: %v", request.Email)
 
 	// Call Identity Service using gRPC.
-	data, err := h.identityClient.Register(
+	data, err := h.authClient.Register(
 		c.Request.Context(),
 		&pb.RegisterRequest{
 			Name:    request.Name,
@@ -73,7 +73,7 @@ func (h *IdentityHandler) Register(c *gin.Context) {
 	})
 }
 
-func (h *IdentityHandler) Login(c *gin.Context) {
+func (h *AuthHandler) Login(c *gin.Context) {
 
 	var request struct {
 		Email    string `json:"email"`
@@ -86,7 +86,7 @@ func (h *IdentityHandler) Login(c *gin.Context) {
 	}
 
 	// Call Identity Service using gRPC.
-	response, err := h.identityClient.Login(
+	response, err := h.authClient.Login(
 		c.Request.Context(),
 		&pb.LoginRequest{
 			Email:    request.Email,
@@ -106,7 +106,7 @@ func (h *IdentityHandler) Login(c *gin.Context) {
 	})
 }
 
-func (h *IdentityHandler) Logout(c *gin.Context) {
+func (h *AuthHandler) Logout(c *gin.Context) {
 	var request struct {
 		RefreshToken string `json:"refresh_token"`
 	}
@@ -117,7 +117,7 @@ func (h *IdentityHandler) Logout(c *gin.Context) {
 	}
 
 	// Call Identity Service using gRPC.
-	_, err := h.identityClient.Logout(
+	_, err := h.authClient.Logout(
 		c.Request.Context(),
 		&pb.LogoutRequest{
 			RefreshToken:    request.RefreshToken,
@@ -135,7 +135,7 @@ func (h *IdentityHandler) Logout(c *gin.Context) {
 	})
 }
 
-func (h *IdentityHandler) RefreshToken(c *gin.Context) {
+func (h *AuthHandler) RefreshToken(c *gin.Context) {
 
 	var request struct {
 		RefreshToken string `json:"refresh_token"`
@@ -147,11 +147,11 @@ func (h *IdentityHandler) RefreshToken(c *gin.Context) {
 	}
 
 	// Refresh token enpoint through gRPC
-	accessToken, err := h.identityClient.RefreshToken(
+	accessToken, err := h.authClient.RefreshToken(
 		c.Request.Context(),
 		&pb.RefreshTokenRequest{
 			RefreshToken: request.RefreshToken,
-		},
+		}, 
 	)
 
 	if err != nil {

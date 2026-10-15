@@ -31,7 +31,7 @@ func TestRegisterTransactionRollback(t *testing.T) {
 		t.Fatalf("failed to connect to test database: %v", err)
 	}
 
-	identityRepo := repo.NewIdentityRepo(db)
+	authRepo := repo.NewAuthRepo(db)
 	ctx := context.Background()
 
 	// Use a unique email so repeated test runs do not collide.
@@ -45,8 +45,8 @@ func TestRegisterTransactionRollback(t *testing.T) {
 		PasswordHash: "test-password-hash",
 	}
 
-	err = identityRepo.Transaction(ctx, func(tx *gorm.DB) error {
-		if err := identityRepo.Register(tx, user); err != nil {
+	err = authRepo.Transaction(ctx, func(tx *gorm.DB) error {
+		if err := authRepo.Register(tx, user); err != nil {
 			return err
 		}
 

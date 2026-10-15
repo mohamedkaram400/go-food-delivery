@@ -12,18 +12,18 @@ import (
 )
 
 
-type IdentityHandler struct { 
+type AuthHandler struct { 
 	AuthService *service.AuthService
-	pb.UnimplementedIdentityServiceServer
+	pb.UnimplementedAuthServiceServer
 }
 
-func NewIdentityHandler(AuthService *service.AuthService) *IdentityHandler {
-	return &IdentityHandler{
+func NewAuthHandler(AuthService *service.AuthService) *AuthHandler {
+	return &AuthHandler{
 		AuthService: AuthService,
 	}
 }
 
-func (s *IdentityHandler) Register(ctx context.Context, req *pb.RegisterRequest) (*pb.AuthResponse, error) {
+func (s *AuthHandler) Register(ctx context.Context, req *pb.RegisterRequest) (*pb.AuthResponse, error) {
 
 	log.Println("🔥 IDENTITY: Register gRPC handler reached")
 
@@ -60,7 +60,7 @@ func (s *IdentityHandler) Register(ctx context.Context, req *pb.RegisterRequest)
 	}, nil
 }
 
-func (s *IdentityHandler) Login(ctx context.Context, req *pb.LoginRequest) (*pb.AuthResponse, error) {
+func (s *AuthHandler) Login(ctx context.Context, req *pb.LoginRequest) (*pb.AuthResponse, error) {
 
 	log.Println("🔥 IDENTITY: Login gRPC handler reached")
 
@@ -94,7 +94,7 @@ func (s *IdentityHandler) Login(ctx context.Context, req *pb.LoginRequest) (*pb.
 	}, nil
 }
 
-func (s *IdentityHandler) Logout(ctx context.Context, req *pb.LogoutRequest) (*pb.Empty, error) {
+func (s *AuthHandler) Logout(ctx context.Context, req *pb.LogoutRequest) (*pb.Empty, error) {
 	log.Println("🔥 IDENTITY: Logout gRPC handler reached")
 
 	if err := s.AuthService.Logout(ctx, req.RefreshToken); err != nil {
@@ -109,7 +109,7 @@ func (s *IdentityHandler) Logout(ctx context.Context, req *pb.LogoutRequest) (*p
 	return &pb.Empty{}, nil
 }
 
-func (s *IdentityHandler) RefreshToken(ctx context.Context, req *pb.RefreshTokenRequest) (*pb.AuthResponse, error) {
+func (s *AuthHandler) RefreshToken(ctx context.Context, req *pb.RefreshTokenRequest) (*pb.AuthResponse, error) {
 	log.Println("🔥 IDENTITY: RefreshToken gRPC handler reached")
 
 	accessToken, err := s.AuthService.RefreshToken(ctx, req.RefreshToken) 
