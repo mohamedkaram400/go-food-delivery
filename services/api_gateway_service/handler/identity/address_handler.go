@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -20,9 +21,9 @@ func NewAddressHandler(addressClient pb.AddressServiceClient) *AddressHandler {
 	}
 }
 
-func (h *AddressHandler) AddAddress(c *gin.Context) {
+func (h *AddressHandler) AddAddresses(c *gin.Context) {
 
-	var request struct {
+	var request struct { 
         Addresses []string `json:"addresses" binding:"required,min=1,max=5,dive,required"`
 	}
 
@@ -31,7 +32,9 @@ func (h *AddressHandler) AddAddress(c *gin.Context) {
 		return 
 	}
 
-	addresses, err := h.addressClient.CreateAddress(
+	log.Println("GATEWAY: Request address successfully")
+
+	addresses, err := h.addressClient.CreateAddresses(
 		c.Request.Context(),
 		&pb.CreateAddressesRequest{
 			Addresses: request.Addresses,

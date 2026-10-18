@@ -39,7 +39,7 @@ protoc \
   --go_opt=paths=source_relative \
   --go-grpc_out=services/identity_service \
   --go-grpc_opt=paths=source_relative \
-  proto/identity/auth.proto   
+  proto/identity/address.proto   
 
 go work use ./services/api_gateway_service ./services/identity_service ./services/restaurant_service ./services/order_service ./services/delivery_service ./services/payment_service ./services/notification_service
 

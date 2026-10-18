@@ -13,40 +13,53 @@ import (
 
 
 func main() {
+    // -------------------
 	// Load config file 
+    // -------------------
 	cfg := config.Load()
 
     // ------------------------------------
 	// Connect to Auth Service
     // ------------------------------------
-	authClient, authConn, err := client.NewIdentityClient(cfg.IdentityService)
+	conn, err := client.NewIdentityClient(cfg.IdentityService)
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	defer authConn.Close()
+	defer conn.Close()
+	
+	// ------------------------------------
+	// Register Client
+	// ------------------------------------
+	authClient := client.NewAuthClient(conn)
+	addressClient := client.NewAddressClient(conn)
+
     // ------------------------------------
 	// Register REST endpoint
 	// ------------------------------------
-
 	authHandler := handler.NewAuthHandler(authClient)
+	addressHandler := handler.NewAddressHandler(addressClient)
 
-
+ 
+	// ------------------------------------
+	// SetUp gin routes
+	// ------------------------------------
 	router := gin.Default()
 	router.SetTrustedProxies(nil)
 	router.Use(gin.Logger(), gin.Recovery())
 
-	// 7. Versioned API group
-	v1 := router.Group("/api/v1")
-
-
-	routes.AuthRoutes(v1, authHandler)
+	// ---------------------------------------
+	// Register the routes with their handler
+	// ---------------------------------------
+	routes.RegisterRoutes(router, routes.Handlers{
+		Auth: authHandler,
+		Address: addressHandler,
+	})
 
 	// ------------------------------------
 	// Start REST server
 	// ------------------------------------
-
 	log.Println("API Gateway running on ", cfg.Port)
 
 	if err := router.Run(cfg.Port); err != nil {

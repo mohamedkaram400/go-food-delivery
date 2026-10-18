@@ -19,10 +19,10 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	AddressService_ListAddresses_FullMethodName = "/identity.AddressService/ListAddresses"
-	AddressService_CreateAddress_FullMethodName = "/identity.AddressService/CreateAddress"
-	AddressService_UpdateAddress_FullMethodName = "/identity.AddressService/UpdateAddress"
-	AddressService_DeleteAddress_FullMethodName = "/identity.AddressService/DeleteAddress"
+	AddressService_ListAddresses_FullMethodName   = "/identity.AddressService/ListAddresses"
+	AddressService_CreateAddresses_FullMethodName = "/identity.AddressService/CreateAddresses"
+	AddressService_UpdateAddress_FullMethodName   = "/identity.AddressService/UpdateAddress"
+	AddressService_DeleteAddress_FullMethodName   = "/identity.AddressService/DeleteAddress"
 )
 
 // AddressServiceClient is the client API for AddressService service.
@@ -30,7 +30,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AddressServiceClient interface {
 	ListAddresses(ctx context.Context, in *ListAddressesRequest, opts ...grpc.CallOption) (*ListAddressesResponse, error)
-	CreateAddress(ctx context.Context, in *CreateAddressesRequest, opts ...grpc.CallOption) (*AddressResponse, error)
+	CreateAddresses(ctx context.Context, in *CreateAddressesRequest, opts ...grpc.CallOption) (*CreateAddressesResponse, error)
 	UpdateAddress(ctx context.Context, in *UpdateAddressRequest, opts ...grpc.CallOption) (*AddressResponse, error)
 	DeleteAddress(ctx context.Context, in *DeleteAddressRequest, opts ...grpc.CallOption) (*DeleteAddressResponse, error)
 }
@@ -53,10 +53,10 @@ func (c *addressServiceClient) ListAddresses(ctx context.Context, in *ListAddres
 	return out, nil
 }
 
-func (c *addressServiceClient) CreateAddress(ctx context.Context, in *CreateAddressesRequest, opts ...grpc.CallOption) (*AddressResponse, error) {
+func (c *addressServiceClient) CreateAddresses(ctx context.Context, in *CreateAddressesRequest, opts ...grpc.CallOption) (*CreateAddressesResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(AddressResponse)
-	err := c.cc.Invoke(ctx, AddressService_CreateAddress_FullMethodName, in, out, cOpts...)
+	out := new(CreateAddressesResponse)
+	err := c.cc.Invoke(ctx, AddressService_CreateAddresses_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -88,7 +88,7 @@ func (c *addressServiceClient) DeleteAddress(ctx context.Context, in *DeleteAddr
 // for forward compatibility.
 type AddressServiceServer interface {
 	ListAddresses(context.Context, *ListAddressesRequest) (*ListAddressesResponse, error)
-	CreateAddress(context.Context, *CreateAddressesRequest) (*AddressResponse, error)
+	CreateAddresses(context.Context, *CreateAddressesRequest) (*CreateAddressesResponse, error)
 	UpdateAddress(context.Context, *UpdateAddressRequest) (*AddressResponse, error)
 	DeleteAddress(context.Context, *DeleteAddressRequest) (*DeleteAddressResponse, error)
 	mustEmbedUnimplementedAddressServiceServer()
@@ -104,8 +104,8 @@ type UnimplementedAddressServiceServer struct{}
 func (UnimplementedAddressServiceServer) ListAddresses(context.Context, *ListAddressesRequest) (*ListAddressesResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ListAddresses not implemented")
 }
-func (UnimplementedAddressServiceServer) CreateAddress(context.Context, *CreateAddressesRequest) (*AddressResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method CreateAddress not implemented")
+func (UnimplementedAddressServiceServer) CreateAddresses(context.Context, *CreateAddressesRequest) (*CreateAddressesResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CreateAddresses not implemented")
 }
 func (UnimplementedAddressServiceServer) UpdateAddress(context.Context, *UpdateAddressRequest) (*AddressResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method UpdateAddress not implemented")
@@ -152,20 +152,20 @@ func _AddressService_ListAddresses_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
-func _AddressService_CreateAddress_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _AddressService_CreateAddresses_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(CreateAddressesRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(AddressServiceServer).CreateAddress(ctx, in)
+		return srv.(AddressServiceServer).CreateAddresses(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: AddressService_CreateAddress_FullMethodName,
+		FullMethod: AddressService_CreateAddresses_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AddressServiceServer).CreateAddress(ctx, req.(*CreateAddressesRequest))
+		return srv.(AddressServiceServer).CreateAddresses(ctx, req.(*CreateAddressesRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -218,8 +218,8 @@ var AddressService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _AddressService_ListAddresses_Handler,
 		},
 		{
-			MethodName: "CreateAddress",
-			Handler:    _AddressService_CreateAddress_Handler,
+			MethodName: "CreateAddresses",
+			Handler:    _AddressService_CreateAddresses_Handler,
 		},
 		{
 			MethodName: "UpdateAddress",

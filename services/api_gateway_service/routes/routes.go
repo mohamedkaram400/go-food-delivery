@@ -2,17 +2,19 @@ package routes
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/mohamed-karam/go-food-delivery/api-gateway-service/handler/identity"
+	identityHandler "github.com/mohamed-karam/go-food-delivery/api-gateway-service/handler/identity"
+	identityRoutes "github.com/mohamed-karam/go-food-delivery/api-gateway-service/routes/identity"
 )
 
+type Handlers struct {
+	Auth    *identityHandler.AuthHandler
+	Address *identityHandler.AddressHandler
+}
 
-func AuthRoutes(rg *gin.RouterGroup, authHandler *handler.AuthHandler) {
-	auth := rg.Group("/auth")
+func RegisterRoutes(r *gin.Engine, h Handlers) {
+	api := r.Group("/api/v1")
+	identity := api.Group("/identity")
 
-	{
-		auth.POST("/register", authHandler.Register)
-		auth.POST("/login", authHandler.Login)
-		auth.POST("/logout", authHandler.Logout)
-		auth.POST("/refresh-token", authHandler.RefreshToken)
-	}
+	identityRoutes.AuthRoutes(identity, h.Auth)
+	identityRoutes.AddressRoutes(identity, h.Address)
 } 

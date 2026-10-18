@@ -8,7 +8,7 @@ option go_package = "github.com/mohamed-karam/go-food-delivery/proto/identity";
 
 service AddressService {
     rpc ListAddresses(ListAddressesRequest) returns (ListAddressesResponse);
-    rpc CreateAddress(CreateAddressesRequest) returns (AddressResponse);
+    rpc CreateAddresses(CreateAddressesRequest) returns (CreateAddressesResponse);
     rpc UpdateAddress(UpdateAddressRequest) returns (AddressResponse);
     rpc DeleteAddress(DeleteAddressRequest) returns (DeleteAddressResponse);
 }
@@ -28,6 +28,10 @@ message DeleteAddressRequest {
     int64 address_id = 1;
 }
 
+message CreateAddressesResponse {
+  repeated Address addresses = 1;
+}
+
 message AddressResponse {
     int64 id = 1;
     string address = 2;
@@ -41,7 +45,10 @@ message DeleteAddressResponse {
     bool success = 1;
 }
 
+message Address {
+    int64 id = 1;
+    string Address = 2;
+    int64 user_id = 3;
+}
 
-
-
-
+ 

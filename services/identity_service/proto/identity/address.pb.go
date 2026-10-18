@@ -197,6 +197,50 @@ func (x *DeleteAddressRequest) GetAddressId() int64 {
 	return 0
 }
 
+type CreateAddressesResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Addresses     []*Address             `protobuf:"bytes,1,rep,name=addresses,proto3" json:"addresses,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreateAddressesResponse) Reset() {
+	*x = CreateAddressesResponse{}
+	mi := &file_proto_identity_address_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateAddressesResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateAddressesResponse) ProtoMessage() {}
+
+func (x *CreateAddressesResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_identity_address_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateAddressesResponse.ProtoReflect.Descriptor instead.
+func (*CreateAddressesResponse) Descriptor() ([]byte, []int) {
+	return file_proto_identity_address_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *CreateAddressesResponse) GetAddresses() []*Address {
+	if x != nil {
+		return x.Addresses
+	}
+	return nil
+}
+
 type AddressResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -207,7 +251,7 @@ type AddressResponse struct {
 
 func (x *AddressResponse) Reset() {
 	*x = AddressResponse{}
-	mi := &file_proto_identity_address_proto_msgTypes[4]
+	mi := &file_proto_identity_address_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -219,7 +263,7 @@ func (x *AddressResponse) String() string {
 func (*AddressResponse) ProtoMessage() {}
 
 func (x *AddressResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_identity_address_proto_msgTypes[4]
+	mi := &file_proto_identity_address_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -232,7 +276,7 @@ func (x *AddressResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AddressResponse.ProtoReflect.Descriptor instead.
 func (*AddressResponse) Descriptor() ([]byte, []int) {
-	return file_proto_identity_address_proto_rawDescGZIP(), []int{4}
+	return file_proto_identity_address_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *AddressResponse) GetId() int64 {
@@ -258,7 +302,7 @@ type ListAddressesResponse struct {
 
 func (x *ListAddressesResponse) Reset() {
 	*x = ListAddressesResponse{}
-	mi := &file_proto_identity_address_proto_msgTypes[5]
+	mi := &file_proto_identity_address_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -270,7 +314,7 @@ func (x *ListAddressesResponse) String() string {
 func (*ListAddressesResponse) ProtoMessage() {}
 
 func (x *ListAddressesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_identity_address_proto_msgTypes[5]
+	mi := &file_proto_identity_address_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -283,7 +327,7 @@ func (x *ListAddressesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListAddressesResponse.ProtoReflect.Descriptor instead.
 func (*ListAddressesResponse) Descriptor() ([]byte, []int) {
-	return file_proto_identity_address_proto_rawDescGZIP(), []int{5}
+	return file_proto_identity_address_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *ListAddressesResponse) GetAddresses() []*AddressResponse {
@@ -302,7 +346,7 @@ type DeleteAddressResponse struct {
 
 func (x *DeleteAddressResponse) Reset() {
 	*x = DeleteAddressResponse{}
-	mi := &file_proto_identity_address_proto_msgTypes[6]
+	mi := &file_proto_identity_address_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -314,7 +358,7 @@ func (x *DeleteAddressResponse) String() string {
 func (*DeleteAddressResponse) ProtoMessage() {}
 
 func (x *DeleteAddressResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_identity_address_proto_msgTypes[6]
+	mi := &file_proto_identity_address_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -327,7 +371,7 @@ func (x *DeleteAddressResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteAddressResponse.ProtoReflect.Descriptor instead.
 func (*DeleteAddressResponse) Descriptor() ([]byte, []int) {
-	return file_proto_identity_address_proto_rawDescGZIP(), []int{6}
+	return file_proto_identity_address_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *DeleteAddressResponse) GetSuccess() bool {
@@ -335,6 +379,66 @@ func (x *DeleteAddressResponse) GetSuccess() bool {
 		return x.Success
 	}
 	return false
+}
+
+type Address struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Address       string                 `protobuf:"bytes,2,opt,name=Address,proto3" json:"Address,omitempty"`
+	UserId        int64                  `protobuf:"varint,3,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Address) Reset() {
+	*x = Address{}
+	mi := &file_proto_identity_address_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Address) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Address) ProtoMessage() {}
+
+func (x *Address) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_identity_address_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Address.ProtoReflect.Descriptor instead.
+func (*Address) Descriptor() ([]byte, []int) {
+	return file_proto_identity_address_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *Address) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *Address) GetAddress() string {
+	if x != nil {
+		return x.Address
+	}
+	return ""
+}
+
+func (x *Address) GetUserId() int64 {
+	if x != nil {
+		return x.UserId
+	}
+	return 0
 }
 
 var File_proto_identity_address_proto protoreflect.FileDescriptor
@@ -351,17 +455,23 @@ const file_proto_identity_address_proto_rawDesc = "" +
 	"\aaddress\x18\x02 \x01(\tR\aaddress\"5\n" +
 	"\x14DeleteAddressRequest\x12\x1d\n" +
 	"\n" +
-	"address_id\x18\x01 \x01(\x03R\taddressId\";\n" +
+	"address_id\x18\x01 \x01(\x03R\taddressId\"J\n" +
+	"\x17CreateAddressesResponse\x12/\n" +
+	"\taddresses\x18\x01 \x03(\v2\x11.identity.AddressR\taddresses\";\n" +
 	"\x0fAddressResponse\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x18\n" +
 	"\aaddress\x18\x02 \x01(\tR\aaddress\"P\n" +
 	"\x15ListAddressesResponse\x127\n" +
 	"\taddresses\x18\x01 \x03(\v2\x19.identity.AddressResponseR\taddresses\"1\n" +
 	"\x15DeleteAddressResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess2\xce\x02\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\"L\n" +
+	"\aAddress\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x18\n" +
+	"\aAddress\x18\x02 \x01(\tR\aAddress\x12\x17\n" +
+	"\auser_id\x18\x03 \x01(\x03R\x06userId2\xd8\x02\n" +
 	"\x0eAddressService\x12P\n" +
-	"\rListAddresses\x12\x1e.identity.ListAddressesRequest\x1a\x1f.identity.ListAddressesResponse\x12L\n" +
-	"\rCreateAddress\x12 .identity.CreateAddressesRequest\x1a\x19.identity.AddressResponse\x12J\n" +
+	"\rListAddresses\x12\x1e.identity.ListAddressesRequest\x1a\x1f.identity.ListAddressesResponse\x12V\n" +
+	"\x0fCreateAddresses\x12 .identity.CreateAddressesRequest\x1a!.identity.CreateAddressesResponse\x12J\n" +
 	"\rUpdateAddress\x12\x1e.identity.UpdateAddressRequest\x1a\x19.identity.AddressResponse\x12P\n" +
 	"\rDeleteAddress\x12\x1e.identity.DeleteAddressRequest\x1a\x1f.identity.DeleteAddressResponseB:Z8github.com/mohamed-karam/go-food-delivery/proto/identityb\x06proto3"
 
@@ -377,31 +487,34 @@ func file_proto_identity_address_proto_rawDescGZIP() []byte {
 	return file_proto_identity_address_proto_rawDescData
 }
 
-var file_proto_identity_address_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
+var file_proto_identity_address_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
 var file_proto_identity_address_proto_goTypes = []any{
-	(*ListAddressesRequest)(nil),   // 0: identity.ListAddressesRequest
-	(*CreateAddressesRequest)(nil), // 1: identity.CreateAddressesRequest
-	(*UpdateAddressRequest)(nil),   // 2: identity.UpdateAddressRequest
-	(*DeleteAddressRequest)(nil),   // 3: identity.DeleteAddressRequest
-	(*AddressResponse)(nil),        // 4: identity.AddressResponse
-	(*ListAddressesResponse)(nil),  // 5: identity.ListAddressesResponse
-	(*DeleteAddressResponse)(nil),  // 6: identity.DeleteAddressResponse
+	(*ListAddressesRequest)(nil),    // 0: identity.ListAddressesRequest
+	(*CreateAddressesRequest)(nil),  // 1: identity.CreateAddressesRequest
+	(*UpdateAddressRequest)(nil),    // 2: identity.UpdateAddressRequest
+	(*DeleteAddressRequest)(nil),    // 3: identity.DeleteAddressRequest
+	(*CreateAddressesResponse)(nil), // 4: identity.CreateAddressesResponse
+	(*AddressResponse)(nil),         // 5: identity.AddressResponse
+	(*ListAddressesResponse)(nil),   // 6: identity.ListAddressesResponse
+	(*DeleteAddressResponse)(nil),   // 7: identity.DeleteAddressResponse
+	(*Address)(nil),                 // 8: identity.Address
 }
 var file_proto_identity_address_proto_depIdxs = []int32{
-	4, // 0: identity.ListAddressesResponse.addresses:type_name -> identity.AddressResponse
-	0, // 1: identity.AddressService.ListAddresses:input_type -> identity.ListAddressesRequest
-	1, // 2: identity.AddressService.CreateAddress:input_type -> identity.CreateAddressesRequest
-	2, // 3: identity.AddressService.UpdateAddress:input_type -> identity.UpdateAddressRequest
-	3, // 4: identity.AddressService.DeleteAddress:input_type -> identity.DeleteAddressRequest
-	5, // 5: identity.AddressService.ListAddresses:output_type -> identity.ListAddressesResponse
-	4, // 6: identity.AddressService.CreateAddress:output_type -> identity.AddressResponse
-	4, // 7: identity.AddressService.UpdateAddress:output_type -> identity.AddressResponse
-	6, // 8: identity.AddressService.DeleteAddress:output_type -> identity.DeleteAddressResponse
-	5, // [5:9] is the sub-list for method output_type
-	1, // [1:5] is the sub-list for method input_type
-	1, // [1:1] is the sub-list for extension type_name
-	1, // [1:1] is the sub-list for extension extendee
-	0, // [0:1] is the sub-list for field type_name
+	8, // 0: identity.CreateAddressesResponse.addresses:type_name -> identity.Address
+	5, // 1: identity.ListAddressesResponse.addresses:type_name -> identity.AddressResponse
+	0, // 2: identity.AddressService.ListAddresses:input_type -> identity.ListAddressesRequest
+	1, // 3: identity.AddressService.CreateAddresses:input_type -> identity.CreateAddressesRequest
+	2, // 4: identity.AddressService.UpdateAddress:input_type -> identity.UpdateAddressRequest
+	3, // 5: identity.AddressService.DeleteAddress:input_type -> identity.DeleteAddressRequest
+	6, // 6: identity.AddressService.ListAddresses:output_type -> identity.ListAddressesResponse
+	4, // 7: identity.AddressService.CreateAddresses:output_type -> identity.CreateAddressesResponse
+	5, // 8: identity.AddressService.UpdateAddress:output_type -> identity.AddressResponse
+	7, // 9: identity.AddressService.DeleteAddress:output_type -> identity.DeleteAddressResponse
+	6, // [6:10] is the sub-list for method output_type
+	2, // [2:6] is the sub-list for method input_type
+	2, // [2:2] is the sub-list for extension type_name
+	2, // [2:2] is the sub-list for extension extendee
+	0, // [0:2] is the sub-list for field type_name
 }
 
 func init() { file_proto_identity_address_proto_init() }
@@ -415,7 +528,7 @@ func file_proto_identity_address_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_identity_address_proto_rawDesc), len(file_proto_identity_address_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   7,
+			NumMessages:   9,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

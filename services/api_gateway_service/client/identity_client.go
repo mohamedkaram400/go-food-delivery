@@ -7,14 +7,20 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-func NewIdentityClient(address string) (pb.AuthServiceClient, *grpc.ClientConn, error) {
+func NewIdentityClient(address string) (*grpc.ClientConn, error) {
 
 	conn, err := grpc.NewClient(address, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
-	client := pb.NewAuthServiceClient(conn)
-
-	return client, nil, nil
+	return conn, nil
 }
+
+func NewAuthClient(conn *grpc.ClientConn) pb.AuthServiceClient {
+	return pb.NewAuthServiceClient(conn)
+}
+
+func NewAddressClient(conn *grpc.ClientConn) pb.AddressServiceClient {
+	return pb.NewAddressServiceClient(conn)
+} 

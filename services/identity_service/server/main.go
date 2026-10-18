@@ -15,17 +15,15 @@ import (
 	"google.golang.org/grpc"
 )
 
-
-
 func main() {
 	// ------------------------------------
-	// Load config file 
+	// Load config file
 	// ------------------------------------
 	cfg := config.Load()
 
 	// ------------------------------------
 	// Connect to the DB
-    // ------------------------------------
+	// ------------------------------------
 	mysql, err := conn.ConnectMySQL(cfg.DSN)
 	if err != nil {
 		log.Fatal("❌ Failed to connect MySQL:", err)
@@ -38,38 +36,50 @@ func main() {
 
 	defer sqlDB.Close()
 
+	// ------------------------------------
 	// Migrate the tables
-    if err := migration.Run(cfg.MigrationPath, cfg.DatabaseURL); err != nil {
+	// ------------------------------------
+	if err := migration.Run(cfg.MigrationPath, cfg.DatabaseURL); err != nil {
 		log.Fatal("❌ Migrations failed:", err)
-    }
+	}
 	log.Println("✅ Migrations completed successfully")
 
+	// ------------------------------------
 	// Run the seeders
+	// ------------------------------------
 	if err := seeder.Run(mysql); err != nil {
 		log.Fatal("❌ Seeders failed: ", err)
-    }
+	}
 	log.Println("✅ Seeders completed successfully")
 
 	// ------------------------------------
-	// Identity Service
+	// Identity Services
 	// ------------------------------------
 	grpcServer := grpc.NewServer()
-    identityRepo := repo.NewAuthRepo(mysql)
-    identityService := service.NewAuthService(identityRepo, cfg.AccessTokenDuration, cfg.RefreshTokenDuration)
-    grpcHandler := handler.NewAuthHandler(identityService)
 
+	// Auth Service
+	identityRepo := repo.NewAuthRepo(mysql)
+	identityService := service.NewAuthService(identityRepo, cfg.AccessTokenDuration, cfg.RefreshTokenDuration)
+	authHandler := handler.NewAuthHandler(identityService)
 	
-	pb.RegisterAuthServiceServer(grpcServer, grpcHandler)
+	pb.RegisterAuthServiceServer(grpcServer, authHandler)
+
+	// Address Service
+	addressRepo := repo.NewAddressRepo(mysql)
+	addressService := service.NewAddressService(addressRepo)
+	addressHandler := handler.NewAddressHandler(addressService)
+
+	pb.RegisterAddressServiceServer(grpcServer, addressHandler)
 
 	// ------------------------------------
 	// Start gRPC server
 	// ------------------------------------
 	listener, err := net.Listen("tcp", cfg.Port)
-    if err != nil {
-        log.Fatal(err)
-    }
+	if err != nil {
+		log.Fatal(err)
+	}
 
-    log.Println("Identity Service gRPC running on ", cfg.Port)
+	log.Println("Identity Service gRPC running on ", cfg.Port)
 
 	if err := grpcServer.Serve(listener); err != nil {
 		log.Fatal(err)
