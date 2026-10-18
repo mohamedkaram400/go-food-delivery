@@ -35,7 +35,7 @@ func (s *AddressService) Store(ctx context.Context, req *requests.CreateAddresse
 		// Prepare address object
 		addressObj := &entity.Address{
 			Address:         name,
-			UserID:          userID,
+			// UserID:          userID, 
 		}
 
 		// Pass the user object to repo for creation
