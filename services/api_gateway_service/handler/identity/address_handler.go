@@ -3,11 +3,13 @@ package handler
 import (
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/mohamed-karam/go-food-delivery/api-gateway-service/errors"
 	res "github.com/mohamed-karam/go-food-delivery/api-gateway-service/response"
 	pb "github.com/mohamed-karam/go-food-delivery/identity-service/proto/identity"
+	"google.golang.org/grpc/metadata"
 )
 
 
@@ -32,10 +34,25 @@ func (h *AddressHandler) AddAddresses(c *gin.Context) {
 		return 
 	}
 
-	log.Println("GATEWAY: Request address successfully")
+	log.Println("GATEWAY: Request comes to address successfully")
+
+	// Set by authentication middleware after JWT verification.
+	userID := c.GetInt64("user_id")
+	if userID <= 0 {
+		c.JSON(http.StatusUnauthorized, gin.H{
+            "message": "Unauthorized",
+        })
+        return
+	}
+
+	ctx := metadata.AppendToOutgoingContext(
+		c.Request.Context(),
+		"x-user-id",
+		strconv.FormatInt(userID, 10),
+	)
 
 	addresses, err := h.addressClient.CreateAddresses(
-		c.Request.Context(),
+		ctx,
 		&pb.CreateAddressesRequest{
 			Addresses: request.Addresses,
 		},

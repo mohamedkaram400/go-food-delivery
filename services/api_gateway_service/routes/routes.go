@@ -11,10 +11,10 @@ type Handlers struct {
 	Address *identityHandler.AddressHandler
 }
 
-func RegisterRoutes(r *gin.Engine, h Handlers) {
+func RegisterRoutes(r *gin.Engine, h Handlers, secretKey string) {
 	api := r.Group("/api/v1")
 	identity := api.Group("/identity")
 
 	identityRoutes.AuthRoutes(identity, h.Auth)
-	identityRoutes.AddressRoutes(identity, h.Address)
-} 
+	identityRoutes.AddressRoutes(identity, h.Address, secretKey)
+}  

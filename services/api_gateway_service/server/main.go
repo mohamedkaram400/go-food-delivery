@@ -53,9 +53,11 @@ func main() {
 	// Register the routes with their handler
 	// ---------------------------------------
 	routes.RegisterRoutes(router, routes.Handlers{
-		Auth: authHandler,
-		Address: addressHandler,
-	})
+				Auth: authHandler,
+				Address: addressHandler,	
+			}, 
+			cfg.SecretKey,
+		)
 
 	// ------------------------------------
 	// Start REST server

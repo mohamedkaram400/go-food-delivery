@@ -3,12 +3,15 @@ package handler
 import (
 	"context"
 	"log"
+	"strconv"
 
+	"github.com/mohamed-karam/go-food-delivery/identity-service/errors"
 	pb "github.com/mohamed-karam/go-food-delivery/identity-service/proto/identity"
 	"github.com/mohamed-karam/go-food-delivery/identity-service/requests"
-	"github.com/mohamed-karam/go-food-delivery/identity-service/errors"
 	"github.com/mohamed-karam/go-food-delivery/identity-service/service"
-
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
 )
 
 
@@ -27,6 +30,23 @@ func (s *AddressHandler) CreateAddresses(ctx context.Context, req *pb.CreateAddr
 
 	log.Println("🔥 IDENTITY: Store Address gRPC handler reached")
 
+	// Extract metadata from incoming gRPC request.
+	md, ok := metadata.FromIncomingContext(ctx)
+    if !ok {
+        return nil, status.Error(codes.Unauthenticated, "Missing authentication metadata")
+    }
+
+	values := md.Get("x-user-id")
+	if len(values) != 1 {
+        return nil, status.Error(codes.Unauthenticated, "Missing user ID")
+    }
+
+    userID, err := strconv.ParseInt(values[0], 10, 64)
+    if err != nil || userID <= 0 {
+        return nil, status.Error(codes.Unauthenticated, "Invalid user ID")
+    }
+
+
 	// Prepare the register request
 	addressesRequest := &requests.CreateAddressesRequest{
 		Addresses:     req.Addresses,
@@ -34,7 +54,7 @@ func (s *AddressHandler) CreateAddresses(ctx context.Context, req *pb.CreateAddr
 	log.Printf("📥 IDENTITY: Request received: %+v", addressesRequest)
 
 	// Call the register endpoint to get the token and user
-	addresses, err := s.AddressService.Store(ctx, addressesRequest)
+	addresses, err := s.AddressService.Store(ctx, userID, addressesRequest)
 	if err != nil {
 		log.Printf("❌ IDENTITY: Service error: %v", err)
 
@@ -58,3 +78,4 @@ func (s *AddressHandler) CreateAddresses(ctx context.Context, req *pb.CreateAddr
 	// Return the address response 
 	return response, nil
 }
+ 

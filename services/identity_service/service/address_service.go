@@ -20,7 +20,7 @@ func NewAddressService(addressRepo *repo.AddressRepo) *AddressService {
 	}
 } 
 
-func (s *AddressService) Store(ctx context.Context, req *requests.CreateAddressesRequest) ([]*entity.Address, error) {
+func (s *AddressService) Store(ctx context.Context, userID int64, req *requests.CreateAddressesRequest) ([]*entity.Address, error) {
 
 	// Check validation errors
 	validate := validator.New()
@@ -35,7 +35,7 @@ func (s *AddressService) Store(ctx context.Context, req *requests.CreateAddresse
 		// Prepare address object
 		addressObj := &entity.Address{
 			Address:         name,
-			// UserID:          userID, 
+			UserID:          int(userID), 
 		}
 
 		// Pass the user object to repo for creation

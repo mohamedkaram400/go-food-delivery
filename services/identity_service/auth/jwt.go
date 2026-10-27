@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -17,7 +18,7 @@ var jwtSecret = []byte(os.Getenv("SECRET_KEY"))
 func generateToken(user *entity.User, duration time.Duration, tokenType string) (string, error) {
 
 	claims := jwt.MapClaims{
-		"sub": user.ID,
+		"sub": strconv.FormatInt(int64(user.ID), 10),
 		"role": user.RoleID,
 		"email": user.Email,
 		"type": tokenType,
