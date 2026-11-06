@@ -59,7 +59,7 @@ func main() {
 
 	// Auth Service
 	identityRepo := repo.NewAuthRepo(mysql)
-	identityService := service.NewAuthService(identityRepo, cfg.AccessTokenDuration, cfg.RefreshTokenDuration)
+	identityService := service.NewAuthService(identityRepo, cfg.AccessTokenDuration, cfg.RefreshTokenDuration, cfg.JWTSecret)
 	authHandler := handler.NewAuthHandler(identityService)
 	
 	pb.RegisterAuthServiceServer(grpcServer, authHandler)

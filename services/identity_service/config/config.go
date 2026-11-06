@@ -1,8 +1,9 @@
 package config
 
 import (
+	"log"
 	"os"
-	"strconv"
+	"time"
 
 	"github.com/joho/godotenv"
 )
@@ -14,24 +15,40 @@ type Config struct {
 	DSN   			  string
 	MigrationPath	  string
 	DatabaseURL		  string
-	AccessTokenDuration		int
-	RefreshTokenDuration	int
+	JWTSecret		  string
+	AccessTokenDuration		time.Duration
+	RefreshTokenDuration	time.Duration
 }
 
 func Load() *Config {
 	_ = godotenv.Load()
 
-	accessTokenDuration, _ := strconv.Atoi(os.Getenv("ACCESS_TOKEN_DURATION"))
-	refreshTokenDuration, _ := strconv.Atoi(os.Getenv("REFRESH_TOKEN_DURATION"))
+	accessDuration, err := time.ParseDuration(os.Getenv("ACCESS_TOKEN_DURATION"))
+    if err != nil {
+        log.Fatal("Invalid ACCESS_TOKEN_DURATION: ", err)
+    }
 
+    refreshDuration, err := time.ParseDuration(os.Getenv("REFRESH_TOKEN_DURATION"))
+    if err != nil {
+        log.Fatal("Invalid REFRESH_TOKEN_DURATION: ", err)
+    }
+
+	jwtSecret := os.Getenv("SECRET_KEY")
+    if jwtSecret == "" {
+        log.Fatal("SECRET_KEY is missing")
+    }
+
+
+	log.Println("accessDuration: ", accessDuration, "refreshDuration: ", refreshDuration)
 	return &Config{
 		Port:              getOrDefault(os.Getenv("SERVICE_PORT"), ":50051"),
 		IdentityService:   os.Getenv("IDENTITY_SERVICE_HOST"),
 		DatabaseURL: 	   os.Getenv("DATABASE_URL"),
 		MigrationPath:     os.Getenv("MIGRATION_PATH"),
 		DSN:   			   os.Getenv("DSN"),
-		AccessTokenDuration:      accessTokenDuration,
-		RefreshTokenDuration:     refreshTokenDuration,
+		JWTSecret:   	   os.Getenv("SECRET_KEY"),
+		AccessTokenDuration:      accessDuration,
+		RefreshTokenDuration:     refreshDuration,
 	}
 }
 

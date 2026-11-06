@@ -3,7 +3,6 @@ package auth
 import (
 	"errors"
 	"fmt"
-	"os"
 	"strconv"
 	"time"
 
@@ -12,10 +11,7 @@ import (
 )
 
 
-var jwtSecret = []byte(os.Getenv("SECRET_KEY"))
-
-
-func generateToken(user *entity.User, duration time.Duration, tokenType string) (string, error) {
+func generateToken(user *entity.User, duration time.Duration, tokenType string, jwtSecret []byte) (string, error) {
 
 	claims := jwt.MapClaims{
 		"sub": strconv.FormatInt(int64(user.ID), 10),
@@ -30,15 +26,15 @@ func generateToken(user *entity.User, duration time.Duration, tokenType string) 
 	return token.SignedString(jwtSecret)
 }
 
-func GenerateAccessToken(user *entity.User, hours int) (string, error) {
-	return generateToken(user, time.Duration(hours)*time.Hour, "AccessToken")
+func GenerateAccessToken(user *entity.User, duration time.Duration, jwtSecret []byte) (string, error) {
+	return generateToken(user, duration, "AccessToken", jwtSecret)
 }
 
-func GenerateRefreshToken(user *entity.User, days int) (string, error) {
-	return generateToken(user, time.Duration(days)*24*time.Hour, "RefreshToken")
+func GenerateRefreshToken(user *entity.User, duration time.Duration, jwtSecret []byte) (string, error) {
+	return generateToken(user, duration, "RefreshToken", jwtSecret)
 }
 
-func ValidateRefreshToken(refreshToken string) (jwt.MapClaims, error) {
+func ValidateRefreshToken(refreshToken string, jwtSecret string) (jwt.MapClaims, error) {
 	token, err := jwt.Parse(
 		refreshToken,
 		func(t *jwt.Token) (interface{}, error) {

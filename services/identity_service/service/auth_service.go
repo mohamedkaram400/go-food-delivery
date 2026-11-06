@@ -19,15 +19,17 @@ import (
 
 type AuthService struct {
 	AuthRepo  *repo.AuthRepo
-	AccessTokenDuration int
-	RefreshTokenDuration int
+	AccessTokenDuration time.Duration
+	RefreshTokenDuration time.Duration
+	JWTSecret  string
 }
 
-func NewAuthService(authRepo *repo.AuthRepo, accessTokenDuration int, refreshTokenDuration int) *AuthService {
+func NewAuthService(authRepo *repo.AuthRepo, accessTokenDuration time.Duration, refreshTokenDuration time.Duration, JWTSecret  string) *AuthService {
 	return &AuthService{
 		AuthRepo:  authRepo,
 		AccessTokenDuration: accessTokenDuration,
 		RefreshTokenDuration: refreshTokenDuration,
+		JWTSecret: JWTSecret,
 	}
 }
 
@@ -108,13 +110,13 @@ func (s *AuthService) Register(ctx context.Context, req *requests.RegisterReques
 		log.Printf("User created successfully: user_id=%d", user.ID)
 
 		// Generate access token for that user
-		accessToken, err = auth.GenerateAccessToken(user, s.AccessTokenDuration)
+		accessToken, err = auth.GenerateAccessToken(user, s.AccessTokenDuration, []byte(s.JWTSecret))
 		if err != nil {
 			return err
 		}
 
 		// Generate refresh token
-		refreshToken, err = auth.GenerateRefreshToken(user, s.RefreshTokenDuration)
+		refreshToken, err = auth.GenerateRefreshToken(user, s.RefreshTokenDuration, []byte(s.JWTSecret))
 		if err != nil {
 			return err
 		}
@@ -163,12 +165,12 @@ func (s *AuthService) Login(ctx context.Context, req *requests.LoginRequest) (st
 		}
 	}
 
-	accessToken, err := auth.GenerateAccessToken(exists, s.AccessTokenDuration)
+	accessToken, err := auth.GenerateAccessToken(exists, s.AccessTokenDuration, []byte(s.JWTSecret))
 	if err != nil {
 		return "", "", nil, err
 	}
 
-	refreshToken, err := auth.GenerateRefreshToken(exists, s.RefreshTokenDuration)
+	refreshToken, err := auth.GenerateRefreshToken(exists, s.RefreshTokenDuration, []byte(s.JWTSecret))
 	if err != nil {
 		return "", "", nil, err
 	}
@@ -193,7 +195,7 @@ func (s *AuthService) Logout(ctx context.Context, refreshToken string) error {
 
 func (s *AuthService) RefreshToken(ctx context.Context, refreshToken string) (string, error) {
 	// Validate the refresh token and extract its claims.
-    claims, err := auth.ValidateRefreshToken(refreshToken)
+    claims, err := auth.ValidateRefreshToken(refreshToken, s.JWTSecret)
     if err != nil {
         return "", err
     }
@@ -237,7 +239,7 @@ func (s *AuthService) RefreshToken(ctx context.Context, refreshToken string) (st
 	}
 
 	// Generate a new access token for this user
-	accessToken, err := auth.GenerateAccessToken(user, s.AccessTokenDuration)
+	accessToken, err := auth.GenerateAccessToken(user, s.AccessTokenDuration, []byte(s.JWTSecret))
 	if err != nil {
 		return "", err
 	}
@@ -249,9 +251,7 @@ func (s *AuthService) RefreshToken(ctx context.Context, refreshToken string) (st
 func (s *AuthService) storeRefreshToken(tx *gorm.DB, refreshToken string, user *entity.User) error {
 
 	hashedToken := pkg.HashToken(refreshToken)
-	expiresAt := time.Now().Add(
-        time.Duration(s.RefreshTokenDuration) * 24 * time.Hour,
-    )
+	expiresAt := time.Now().Add(s.RefreshTokenDuration)
 
 	refreshTokenData := entity.RefreshToken{
 		UserID: 		user.ID,

@@ -1,6 +1,7 @@
 package config
 
 import (
+	"log"
 	"os"
 
 	"github.com/joho/godotenv"
@@ -18,7 +19,12 @@ type Config struct {
 
 func Load() *Config {
 	_ = godotenv.Load()
-	secretKey := string(os.Getenv("SECRET_KEY"))
+
+	jwtSecret := os.Getenv("SECRET_KEY")
+    if jwtSecret == "" {
+        log.Fatal("SECRET_KEY is missing")
+    }
+
 
 	return &Config{
 		Port:              		os.Getenv("API_GATEWAY_SERVICE"),
@@ -27,7 +33,7 @@ func Load() *Config {
 		OrderService:      		os.Getenv("OORDER_SERVICE"),
 		DeliveryService:   	   	os.Getenv("DELIVERY_SERVICE"),
 		NotificationService:   	os.Getenv("NOTIFICATION_SERVICE"),
-		SecretKey:				secretKey,
+		SecretKey:				jwtSecret,
 	}
 }
-
+ 

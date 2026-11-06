@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -18,7 +19,7 @@ func AuthMiddleware(jwtSecret []byte) gin.HandlerFunc {
                 "success": false,
                 "message": "Missing or invalid authorization header",
             })
-            return
+            return 
         }
 
         tokenString := strings.TrimSpace(strings.TrimPrefix(authorization, "Bearer "))
@@ -42,12 +43,20 @@ func AuthMiddleware(jwtSecret []byte) gin.HandlerFunc {
             jwt.WithExpirationRequired(),
         )
 
-        if err != nil || !token.Valid {
+        if err != nil {
+            log.Printf("JWT validation failed: %v", err)
+
             c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
                 "success": false,
                 "message": "Invalid or expired access token",
             })
-            return
+            return 
+        }
+
+        if !token.Valid {
+            log.Println("JWT token is invalid")
+            c.AbortWithStatus(http.StatusUnauthorized)
+            return 
         }
 
         tokenType, ok := claims["type"].(string)
