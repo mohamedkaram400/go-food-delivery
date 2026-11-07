@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/go-playground/validator/v10"
@@ -26,6 +27,22 @@ func (s *AddressService) Store(ctx context.Context, userID int64, req *requests.
 	validate := validator.New()
 	if err := validate.Struct(req); err != nil {
 		return nil, err
+	} 
+
+	// Count existing addresses.
+    existingCount, err := s.AddressRepo.NumberOfAddress(ctx,uint64(userID))
+    if err != nil {
+        return nil, err
+    }
+
+	// Check the total address limit.
+    newCount := int64(len(req.Addresses))
+
+	if existingCount + newCount > 5 {
+		return nil, fmt.Errorf("address limit exceeded: maximum 5 addresses allowed, existing: %d, requested: %d",
+            existingCount,
+            newCount,
+		) 
 	}
 
     addresses := make([]*entity.Address, 0, len(req.Addresses))

@@ -16,7 +16,7 @@ func NewAddressRepo(db *gorm.DB) *AddressRepo {
 	return &AddressRepo{
 		DB: db,
 	}
-}
+} 
 
 func (r *AddressRepo) Store(ctx context.Context, address *entity.Address) (*entity.Address, error) {
 	
@@ -27,14 +27,17 @@ func (r *AddressRepo) Store(ctx context.Context, address *entity.Address) (*enti
 	return address, nil
 }
 
-func (r *AddressRepo) GetUserByID(ctx context.Context, userID uint64) (*entity.User, error) {
-    var user entity.User
+func (r *AddressRepo) NumberOfAddress(ctx context.Context, userID uint64) (int64, error) {
+    var count int64
 
-    if err := r.DB.WithContext(ctx).
-        First(&user, userID).
-        Error; err != nil {
-        return nil, err
+    err := r.DB.WithContext(ctx).
+        Model(&entity.Address{}).
+        Where("user_id = ?", userID).
+        Count(&count).Error
+
+    if err != nil {
+        return 0, err
     }
 
-    return &user, nil
+    return count, nil
 }
